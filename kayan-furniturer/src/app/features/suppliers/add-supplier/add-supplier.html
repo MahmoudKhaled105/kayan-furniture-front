@@ -1,0 +1,172 @@
+<section class="mt-28 px-10 pb-20 max-w-5xl">
+  <!-- Breadcrumbs & Title -->
+  <div class="mb-10">
+    <nav
+      class="flex items-center gap-2 text-outline text-[10px] mb-4 uppercase tracking-widest font-bold"
+    >
+      <a routerLink="/suppliers" class="hover:text-primary">الموردين</a>
+      <span class="material-symbols-outlined text-[10px]">&#xe5cb;</span>
+      <span class="text-on-surface">إضافة مورد</span>
+    </nav>
+    <h2 class="text-4xl font-bold text-on-surface tracking-tight">بيانات مورد جديد</h2>
+    <p class="text-outline mt-2">
+      سجل بيانات التاجر اللي بنجيب منه الشغل عشان حساباتنا تبقى مظبوطة.
+    </p>
+  </div>
+  <form class="space-y-8" (submit)="$event.preventDefault()">
+    <!-- Bento Grid Layout for Form -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Primary Info Card -->
+      <div class="md:col-span-2 bg-surface-container-high p-8 rounded-3xl space-y-6">
+        <div class="flex items-center gap-3 mb-2 text-primary">
+          <span class="material-symbols-outlined">&#xe7fd;</span>
+          <h3 class="font-bold text-lg">البيانات الأساسية</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="text-xs font-semibold text-outline-variant mr-1">الاسم الكامل</label>
+            <input
+              class="w-full bg-surface-container-lowest border border-outline-variant/15 rounded-xl px-4 py-4 text-on-surface focus:border-primary/50 focus:ring-0 transition-all outline-none"
+              placeholder="مثلاً: الحاج محمود للرخام"
+              type="text"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-semibold text-outline-variant mr-1">رقم التليفون</label>
+            <input
+              class="w-full bg-surface-container-lowest border border-outline-variant/15 rounded-xl px-4 py-4 text-on-surface focus:border-primary/50 focus:ring-0 font-manrope transition-all outline-none"
+              dir="ltr"
+              placeholder="01x xxxx xxxx"
+              type="tel"
+            />
+          </div>
+        </div>
+        <div class="space-y-2">
+          <label class="text-xs font-semibold text-outline-variant mr-1">العنوان بالتفصيل</label>
+          <div class="relative">
+            <span
+              class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-sm"
+              >&#xe0c8;</span
+            >
+            <input
+              class="w-full bg-surface-container-lowest border border-outline-variant/15 rounded-xl pr-4 pl-10 py-4 text-on-surface focus:border-primary/50 focus:ring-0 transition-all outline-none"
+              placeholder="المكان فين بالظبط؟"
+              type="text"
+            />
+          </div>
+        </div>
+      </div>
+      <!-- Status & Toggle Card -->
+      <div class="bg-surface-container-low p-8 rounded-3xl flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-3 mb-6 text-secondary">
+            <span class="material-symbols-outlined">&#xe1ff;</span>
+            <h3 class="font-bold text-lg">حالة المورد</h3>
+          </div>
+          <p class="text-sm text-outline mb-8 leading-relaxed">
+            حدد لو لسه بنتعامل مع المورد ده ولا مأنتخ شوية وموقفين شغل معاه.
+          </p>
+        </div>
+        <div class="flex items-center justify-between p-2 bg-surface-container-lowest rounded-2xl">
+          <button
+            (click)="setStatus('active')"
+            [ngClass]="
+              status() === 'active'
+                ? 'bg-primary text-on-primary-fixed shadow-lg'
+                : 'text-outline hover:text-on-surface'
+            "
+            class="flex-1 py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2"
+            type="button"
+          >
+            <!-- <span class="material-symbols-outlined text-sm" [style.font-variation-settings]="status() === 'active' ? \"'FILL' 1\" : \"'FILL' 0\"">&#xe86c;</span> -->
+            شغال
+          </button>
+          <button
+            (click)="setStatus('inactive')"
+            [ngClass]="
+              status() === 'inactive'
+                ? 'bg-primary text-on-primary-fixed shadow-lg'
+                : 'text-outline hover:text-on-surface'
+            "
+            class="flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
+            type="button"
+          >
+            مأنتخ
+          </button>
+        </div>
+      </div>
+      <!-- Payment Terms & Notes -->
+      <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-surface-container-high p-8 rounded-3xl space-y-6">
+          <div class="flex items-center gap-3 mb-2 text-primary">
+            <span class="material-symbols-outlined">&#xe600;</span>
+            <h3 class="font-bold text-lg">نظام الدفع</h3>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div
+              class="bg-surface-container-lowest p-4 rounded-2xl border border-primary/20 flex flex-col gap-2"
+            >
+              <span class="text-[10px] text-outline uppercase tracking-wider">النوع الافتراضي</span>
+              <span class="font-bold text-primary">كاش (نقدي)</span>
+            </div>
+            <div
+              class="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/10 flex flex-col gap-2 opacity-50"
+            >
+              <span class="text-[10px] text-outline uppercase tracking-wider">أجل (شكك)</span>
+              <span class="font-bold text-on-surface-variant">متاح باتفاق</span>
+            </div>
+          </div>
+          <p class="text-xs text-outline leading-relaxed italic">
+            * ملاحظة: أي تغيير في نظام الدفع بيحتاج مراجعة من الحسابات عشان نفتح "النوتة" بتاعته.
+          </p>
+        </div>
+        <div class="bg-surface-container-high p-8 rounded-3xl space-y-4">
+          <div class="flex items-center gap-3 mb-2 text-primary">
+            <span class="material-symbols-outlined">&#xf1fc;</span>
+            <h3 class="font-bold text-lg">ملاحظات (دردشة)</h3>
+          </div>
+          <textarea
+            class="w-full h-32 bg-surface-container-lowest border border-outline-variant/15 rounded-xl px-4 py-4 text-on-surface focus:border-primary/50 focus:ring-0 transition-all resize-none outline-none"
+            placeholder="أي تفاصيل زيادة عن المورد ده.. بضاعته عاملة إزاي؟ مواعيده دقيقة؟"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+    <!-- Action Buttons -->
+    <div class="flex items-center justify-end gap-6 pt-6 border-t border-white/5">
+      <button
+        routerLink="/suppliers"
+        class="px-8 py-4 text-on-surface-variant font-bold hover:text-error transition-colors"
+        type="button"
+      >
+        إلغاء
+      </button>
+      <button
+        class="px-12 py-4 rounded-2xl bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-black text-lg shadow-[0_10px_30px_rgba(232,196,106,0.15)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+        type="submit"
+      >
+        <span>حفظ المورد</span>
+        <span class="material-symbols-outlined">&#xe161;</span>
+      </button>
+    </div>
+  </form>
+  <!-- Contextual Graphic / Showroom Feel -->
+  <div class="mt-20 relative h-64 rounded-3xl overflow-hidden group">
+    <img
+      class="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-700"
+      src="https://lh3.googleusercontent.com/aida-public/AB6AXuBznazOEKc5DY6L2rOK_jkv-J3Kr6obv4sID5Y9yv25IYC_Zuk9t7-6w4VzARuZdMAUbw2U7KHXgvSJVlDhvoZyWxZP3GCReAZDhVw1H0BKDFsZXrZIJSgAcJR9cCHKprECrzw-lMdaQiswzyUuLbKcFqTWDNHI2O-X9j2GSGmEBBM8OGHmSYNEUcQvsLZLS1fAPMjyxzFPMJdXxhh7lRfDqVBlaTwnXYfp0usCH6PGic2Vnk8J4xWv9tYOYf4LPjDjWkfEzWWlSfg"
+    />
+    <div
+      class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"
+    ></div>
+    <div class="absolute bottom-8 right-8 left-8 flex items-end justify-between">
+      <div>
+        <p class="text-primary font-bold text-xl mb-1">خليك فاكر..</p>
+        <p class="text-outline text-sm max-w-md">
+          الموردين هما "عصب" الكشك، اختارهم بعناية عشان سمعتنا من سمعة بضاعتهم.
+        </p>
+      </div>
+      <span class="material-symbols-outlined text-primary/20 text-8xl">&#xea3f;</span>
+    </div>
+  </div>
+</section>

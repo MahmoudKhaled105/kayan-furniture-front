@@ -1,0 +1,138 @@
+<div class="mt-20">
+  <!-- Header Section -->
+  <div class="flex justify-between items-end mb-10">
+    <div>
+      <h2 class="text-4xl font-bold font-headline mb-2">سجل الحبايب (الموردين)</h2>
+      <p class="text-on-surface-variant text-sm flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        إجمالي {{ suppliers().length }} مورد شغالين حالياً
+      </p>
+    </div>
+    <button routerLink="/suppliers/add" class="flex items-center gap-2 px-8 py-4 bg-surface-container-high text-primary font-bold rounded-xl border border-primary/20 hover:bg-primary/10 transition-all shadow-xl active:scale-95">
+      <span class="material-symbols-outlined">&#xe7fe;</span>
+      + مورد جديد
+    </button>
+  </div>
+
+  <!-- Dashboard Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+    <div class="bg-surface-container-high p-6 rounded-xl border-b-4 border-secondary/30 relative overflow-hidden group">
+      <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+        <span class="material-symbols-outlined text-9xl">&#xe600;</span>
+      </div>
+      <p class="text-on-surface-variant text-sm font-medium mb-3">علينا للحبايب (إجمالي مديونية)</p>
+      <h3 class="text-3xl font-black font-headline text-secondary flex items-baseline gap-2">
+        {{ totalDebt() }}
+        <span class="text-xs font-normal text-on-surface-variant">ج.م</span>
+      </h3>
+    </div>
+    <div class="bg-surface-container-high p-6 rounded-xl border-b-4 border-primary/30 relative overflow-hidden group">
+      <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+        <span class="material-symbols-outlined text-9xl">&#xe178;</span>
+      </div>
+      <p class="text-on-surface-variant text-sm font-medium mb-3">حاويات في السكة</p>
+      <h3 class="text-3xl font-black font-headline text-primary flex items-baseline gap-2">
+        {{ containersInRoute() }}
+        <span class="text-xs font-normal text-on-surface-variant">حاويات</span>
+      </h3>
+    </div>
+    <div class="bg-surface-container-high p-6 rounded-xl border-b-4 border-on-surface-variant/30 relative overflow-hidden group">
+      <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+        <span class="material-symbols-outlined text-9xl">&#xbc55;</span>
+      </div>
+      <p class="text-on-surface-variant text-sm font-medium mb-3">آخر دفعة خرجت</p>
+      <h3 class="text-3xl font-black font-headline text-on-surface flex items-baseline gap-2">
+        {{ lastPayment() }}
+        <span class="text-xs font-normal text-on-surface-variant">منذ يومين</span>
+      </h3>
+    </div>
+  </div>
+
+  <!-- Suppliers Table Card -->
+  <div class="bg-surface-container rounded-xl overflow-hidden shadow-2xl">
+    <table class="w-full text-right border-collapse">
+      <thead>
+        <tr class="bg-surface-container-lowest border-b border-outline-variant/10">
+          <th class="px-8 py-5 text-xs font-bold text-on-surface-variant uppercase tracking-wider">المورد</th>
+          <th class="px-8 py-5 text-xs font-bold text-on-surface-variant uppercase tracking-wider">التواصل</th>
+          <th class="px-8 py-5 text-xs font-bold text-on-surface-variant uppercase tracking-wider">المديونية (ج.م)</th>
+          <th class="px-8 py-5 text-xs font-bold text-on-surface-variant uppercase tracking-wider">آخر دفعة</th>
+          <th class="px-8 py-5 text-xs font-bold text-on-surface-variant uppercase tracking-wider">الحالة</th>
+          <th class="px-8 py-5 text-xs font-bold text-on-surface-variant uppercase tracking-wider text-center">الإجراءات</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant/10">
+        @for (supplier of suppliers(); track supplier.id) {
+          <tr class="hover:bg-surface-container-high/50 transition-colors group">
+            <td class="px-8 py-6">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-surface-variant flex items-center justify-center overflow-hidden border border-outline-variant/20">
+                  <img [src]="supplier.imageUrl" [alt]="supplier.name" class="w-full h-full object-cover"/>
+                </div>
+                <div [routerLink]="['/suppliers', supplier.id]" class="cursor-pointer">
+                  <p class="font-bold text-on-surface group-hover:text-primary transition-colors">{{ supplier.name }}</p>
+                  <p class="text-[10px] text-on-surface-variant">كود المورد: {{ supplier.code }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-8 py-6">
+              <div class="flex flex-col">
+                <span class="text-sm font-medium text-on-surface">{{ supplier.phone }}</span>
+                <span class="text-[10px] text-on-surface-variant">{{ supplier.contactNotes }}</span>
+              </div>
+            </td>
+            <td class="px-8 py-6 font-headline font-bold" [ngClass]="supplier.debt !== '٠' ? 'text-secondary' : 'text-on-surface-variant'">{{ supplier.debt }}</td>
+            <td class="px-8 py-6">
+              @if (supplier.lastPaymentDate !== '---') {
+                <div class="flex flex-col">
+                  <span class="text-sm text-on-surface">{{ supplier.lastPaymentDate }}</span>
+                  <span class="text-[10px] text-on-surface-variant">{{ supplier.lastPaymentAmount }}</span>
+                </div>
+              } @else {
+                <span class="text-on-surface-variant">---</span>
+              }
+            </td>
+            <td class="px-8 py-6">
+              @if (supplier.status === 'active') {
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  شغال
+                </span>
+              } @else {
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-bold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                  مأنتخ
+                </span>
+              }
+            </td>
+            <td class="px-8 py-6 text-center">
+              <div class="flex items-center justify-center gap-2">
+                <button [routerLink]="['/suppliers', supplier.id, 'edit']" class="w-8 h-8 rounded-lg bg-surface-container-lowest flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-highest transition-all">
+                  <span class="material-symbols-outlined text-lg">&#xe3c9;</span>
+                </button>
+                <button class="w-8 h-8 rounded-lg bg-surface-container-lowest flex items-center justify-center text-on-surface-variant hover:text-secondary hover:bg-surface-container-highest transition-all">
+                  <span class="material-symbols-outlined text-lg">&#xe600;</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <!-- Table Footer/Pagination -->
+    <div class="px-8 py-4 bg-surface-container-lowest flex justify-between items-center text-xs text-on-surface-variant">
+      <p>عرض 1-3 من أصل {{ suppliers().length }} مورد</p>
+      <div class="flex gap-2">
+        <button class="w-8 h-8 rounded-lg border border-outline-variant/10 flex items-center justify-center hover:bg-surface-container-high transition-all">
+          <span class="material-symbols-outlined text-sm">&#xe5cc;</span>
+        </button>
+        <button class="w-8 h-8 rounded-lg bg-primary text-on-primary font-bold flex items-center justify-center">1</button>
+        <button class="w-8 h-8 rounded-lg border border-outline-variant/10 flex items-center justify-center hover:bg-surface-container-high transition-all">2</button>
+        <button class="w-8 h-8 rounded-lg border border-outline-variant/10 flex items-center justify-center hover:bg-surface-container-high transition-all">3</button>
+        <button class="w-8 h-8 rounded-lg border border-outline-variant/10 flex items-center justify-center hover:bg-surface-container-high transition-all">
+          <span class="material-symbols-outlined text-sm">&#xe5cb;</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
