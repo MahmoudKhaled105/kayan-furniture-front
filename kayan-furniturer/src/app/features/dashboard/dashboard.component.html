@@ -1,0 +1,271 @@
+<div class="dashboard-container" dir="rtl" lang="ar">
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p class="text-on-surface-variant">جاري تحميل البيانات...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <span class="material-symbols-outlined text-6xl text-error">error</span>
+      <p class="text-error text-xl mb-4">{{ error() }}</p>
+      <button class="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold" (click)="loadDashboardData()">
+        إعادة المحاولة
+      </button>
+    </div>
+  } @else {
+    <header class="top-app-bar">
+      <div class="logo-section">
+        <h1 class="app-title text-primary">كُشك</h1>
+        <div class="nav-links">
+          <a class="nav-link active" href="#">الزتونة</a>
+          <a class="nav-link" (click)="navigateToSuppliers()">الموردين</a>
+          <a class="nav-link" (click)="navigateToInventory()">الجرد</a>
+          <a class="nav-link" (click)="navigateToSales()">المبيعات</a>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="date-badge bg-surface-container-high">
+          <span class="material-symbols-outlined text-primary">calendar_today</span>
+          <span class="text-sm">{{ getCurrentDate() }}</span>
+        </div>
+        <span class="material-symbols-outlined icon-btn">account_balance_wallet</span>
+        <span class="material-symbols-outlined icon-btn">notifications</span>
+        <div class="profile-avatar"></div>
+      </div>
+    </header>
+
+    <nav class="side-nav">
+      <div class="brand-section">
+        <div class="brand-icon bg-primary-container">
+          <span class="material-symbols-outlined text-on-primary-container">chair</span>
+        </div>
+        <div class="brand-info">
+          <h2 class="text-xl font-black text-primary">المندرة</h2>
+          <p class="text-[10px] text-gray-500">إدارة الحسابات الفاخرة</p>
+        </div>
+      </div>
+      <div class="nav-items">
+        <a class="nav-item active" href="#">
+          <span class="material-symbols-outlined">dashboard</span>
+          <span>الزتونة</span>
+        </a>
+        <a class="nav-item" (click)="navigateToSuppliers()">
+          <span class="material-symbols-outlined">local_shipping</span>
+          <span>الموردين</span>
+        </a>
+        <a class="nav-item" (click)="navigateToInventory()">
+          <span class="material-symbols-outlined">inventory_2</span>
+          <span>الجرد</span>
+        </a>
+        <a class="nav-item" (click)="navigateToSales()">
+          <span class="material-symbols-outlined">sell</span>
+          <span>المبيعات</span>
+        </a>
+        <a class="nav-item">
+          <span class="material-symbols-outlined">account_balance</span>
+          <span>الحسابات</span>
+        </a>
+      </div>
+      <div class="nav-footer">
+        <button class="add-transaction-btn">
+          <span class="material-symbols-outlined">add_circle</span>
+          <span>إضافة حركة مالية</span>
+        </button>
+        <div class="divider"></div>
+        <a class="footer-link">
+          <span class="material-symbols-outlined">settings</span>
+          <span>الإعدادات</span>
+        </a>
+        <a class="footer-link text-error/80 hover:text-error" (click)="logout()">
+          <span class="material-symbols-outlined">logout</span>
+          <span>تسجيل خروج</span>
+        </a>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <div class="dashboard-header">
+        <div>
+          <span class="text-secondary font-bold text-sm tracking-widest uppercase">حركة الخزنة اليومية</span>
+          <h2 class="editorial-title">الزتونة المالية</h2>
+        </div>
+        <div class="date-filters">
+          <div class="filter-tabs">
+            <button class="filter-tab active" (click)="setDateFilter('today')">اليوم</button>
+            <button class="filter-tab" (click)="setDateFilter('yesterday')">أمس</button>
+            <button class="filter-tab" (click)="setDateFilter('custom')">تاريخ محدد</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-cards">
+        <div class="summary-card total-in">
+          <div class="card-icon-wrapper">
+            <span class="material-symbols-outlined text-primary text-4xl filled">arrow_downward</span>
+            <span class="trend-badge bg-primary/10 text-primary">+١٢٪ عن أمس</span>
+          </div>
+          <div>
+            <p class="card-label">إجمالي الداخل</p>
+            <h3 class="card-value text-on-surface">
+              {{ formatAmount(overview()?.total_in || 0) }}
+              <span class="text-sm font-medium text-on-surface-variant">ج.م</span>
+            </h3>
+          </div>
+        </div>
+
+        <div class="summary-card total-out">
+          <div class="card-icon-wrapper">
+            <span class="material-symbols-outlined text-secondary text-4xl filled">arrow_upward</span>
+            <span class="trend-badge bg-secondary/10 text-secondary">-٥٪ عن أمس</span>
+          </div>
+          <div>
+            <p class="card-label">إجمالي الخارج</p>
+            <h3 class="card-value text-on-surface">
+              {{ formatAmount(overview()?.total_out || 0) }}
+              <span class="text-sm font-medium text-on-surface-variant">ج.م</span>
+            </h3>
+          </div>
+        </div>
+
+        <div class="summary-card net-profit">
+          <div class="card-icon-wrapper">
+            <span class="material-symbols-outlined text-on-primary text-4xl filled">account_balance_wallet</span>
+            <span class="trend-badge bg-on-primary/10 text-on-primary">صافي اليوم</span>
+          </div>
+          <div>
+            <p class="card-label text-on-primary/70">الصافي الفعلي</p>
+            <h3 class="card-value text-on-primary">
+              {{ formatAmount(overview()?.net_profit || 0) }}
+              <span class="text-sm font-medium text-on-primary/70">ج.م</span>
+            </h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="transactions-grid">
+        <section class="transaction-section inflows">
+          <div class="section-header">
+            <div class="section-title">
+              <div class="title-indicator bg-primary"></div>
+              <h3 class="editorial-title">المتحصلات (الداخل)</h3>
+            </div>
+            <span class="view-all text-primary">عرض الكل</span>
+          </div>
+          <div class="transaction-list">
+            @for (txn of inflows(); track txn.id) {
+              <div class="transaction-item">
+                <div class="txn-icon bg-surface-container-highest">
+                  <span class="material-symbols-outlined text-on-surface-variant">{{ getTransactionIcon(txn.type) }}</span>
+                </div>
+                <div class="txn-details">
+                  <h4 class="txn-title">{{ txn.notes || txn.type }}</h4>
+                  <p class="txn-meta">{{ txn.location_name || '' }} • {{ formatTime(txn.transaction_date) }}</p>
+                </div>
+                <div class="txn-amount text-left">
+                  <p class="amount-primary">+ {{ formatAmount(txn.amount) }} ج.م</p>
+                  <p class="txn-time">{{ formatTime(txn.transaction_date) }}</p>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state">
+                <span class="material-symbols-outlined text-4xl text-on-surface-variant">inbox</span>
+                <p class="text-on-surface-variant">لا توجد متحصلات اليوم</p>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="transaction-section outflows">
+          <div class="section-header">
+            <div class="section-title">
+              <div class="title-indicator bg-secondary"></div>
+              <h3 class="editorial-title">المصروفات (الخارج)</h3>
+            </div>
+            <span class="view-all text-secondary">عرض الكل</span>
+          </div>
+          <div class="transaction-list">
+            @for (txn of outflows(); track txn.id) {
+              <div class="transaction-item">
+                <div class="txn-icon bg-surface-container-highest">
+                  <span class="material-symbols-outlined text-on-surface-variant">{{ getTransactionIcon(txn.type) }}</span>
+                </div>
+                <div class="txn-details">
+                  <h4 class="txn-title">{{ txn.notes || txn.type }}</h4>
+                  <p class="txn-meta">{{ txn.location_name || '' }} • {{ formatTime(txn.transaction_date) }}</p>
+                </div>
+                <div class="txn-amount text-left">
+                  <p class="amount-secondary">- {{ formatAmount(txn.amount) }} ج.م</p>
+                  <p class="txn-time">{{ formatTime(txn.transaction_date) }}</p>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state">
+                <span class="material-symbols-outlined text-4xl text-on-surface-variant">inbox</span>
+                <p class="text-on-surface-variant">لا توجد مصروفات اليوم</p>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+
+      <div class="monthly-target">
+        <div class="progress-circle">
+          <svg class="progress-svg" viewBox="0 0 200 200">
+            <circle class="progress-bg" cx="100" cy="100" r="80"></circle>
+            <circle class="progress-fill" cx="100" cy="100" r="80"></circle>
+          </svg>
+          <div class="progress-text">
+            <span class="progress-value">٧٥٪</span>
+            <span class="progress-label">من الهدف</span>
+          </div>
+        </div>
+        <div class="target-info">
+          <h3 class="text-3xl editorial-title text-primary mb-4">الحصالة الشهرية</h3>
+          <p class="text-on-surface-variant max-w-lg mb-8">
+            إحنا وصلنا لـ ٤٥٠,٠٠٠ ج.م من أصل هدف مبيعات ٦٠٠,٠٠٠ ج.م لشهر أكتوبر.
+            عاش يا وحوش المندرة، فاضل "تكة" ونقفل التارجت!
+          </p>
+          <div class="target-stats">
+            <div class="stat-box bg-surface-container-lowest">
+              <p class="text-[10px] text-on-surface-variant mb-1">المتبقي</p>
+              <p class="text-xl font-bold">١٥٠,٠٠٠ ج.م</p>
+            </div>
+            <div class="stat-box bg-surface-container-lowest border border-primary/20">
+              <p class="text-[10px] text-on-surface-variant mb-1">متوسط اليوم</p>
+              <p class="text-xl font-bold text-primary">٢٥,٠٠٠ ج.م</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <nav class="bottom-nav">
+      <a class="bottom-nav-item active" href="#">
+        <span class="material-symbols-outlined">analytics</span>
+        <span>الزتونة</span>
+      </a>
+      <a class="bottom-nav-item" (click)="navigateToSuppliers()">
+        <span class="material-symbols-outlined">group</span>
+        <span>الموردين</span>
+      </a>
+      <a class="bottom-nav-item" (click)="navigateToInventory()">
+        <span class="material-symbols-outlined">chair</span>
+        <span>الجرد</span>
+      </a>
+      <a class="bottom-nav-item" (click)="navigateToSales()">
+        <span class="material-symbols-outlined">payments</span>
+        <span>المبيعات</span>
+      </a>
+      <a class="bottom-nav-item">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span>الحسابات</span>
+      </a>
+    </nav>
+
+    <div class="fab">
+      <button class="fab-btn bg-primary text-on-primary">
+        <span class="material-symbols-outlined text-3xl">add</span>
+      </button>
+    </div>
+  }
+</div>

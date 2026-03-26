@@ -2,14 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: #131313;
+  --surface: #1c1c1e;
+  --surface-container: #1c1c1e;
+  --surface-container-low: #252529;
+  --surface-container-highest: #2c2c2e;
+  --on-background: #e5e2e1;
+  --on-surface: #ffffff;
+  --on-surface-variant: #a0a0a0;
+  --primary: #007aff;
+  --on-primary: #ffffff;
+  --error: #ff3b30;
+  --outline-variant: #2a2a2e;
+}
+
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 body {
     font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
-    background-color: #131313;
-    color: #e5e2e1;
+    background-color: var(--background);
+    color: var(--on-background);
 }
 
 .editorial-shadow {
