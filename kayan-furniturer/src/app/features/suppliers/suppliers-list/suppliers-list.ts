@@ -1,8 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { HttpClientService } from '../../../shared/services/http-client.service';
 
-interface Supplier {
+export interface Supplier {
   id: number;
   name: string;
   code: string;
@@ -13,6 +14,15 @@ interface Supplier {
   lastPaymentAmount: string;
   status: 'active' | 'inactive';
   imageUrl: string;
+  outstanding_balance: number;
+  total_paid_lifetime: number;
+}
+
+export interface SupplierStats {
+  total_suppliers: number;
+  total_debt: number;
+  containers_in_route: number;
+  last_payment_amount: number;
 }
 
 @Component({
@@ -20,49 +30,111 @@ interface Supplier {
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './suppliers-list.html',
-  styleUrl: './suppliers-list.scss',
+  styleUrls: ['./suppliers-list.scss']
 })
-export class SuppliersList {
-  suppliers = signal<Supplier[]>([
-    {
-      id: 1,
-      name: 'الأندلسي للأخشاب',
-      code: '#SPL-9902',
-      phone: '0100 456 7890',
-      contactNotes: 'واتساب شغال',
-      debt: '٤٥٠,٠٠٠',
-      lastPaymentDate: '١٢ أكتوبر ٢٠٢٣',
-      lastPaymentAmount: '١٠٠,٠٠٠ ج.م',
-      status: 'active',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBxY7gNKoyt3sIm8qzdxSWmdBf1P3OZs3dbHJ58dpnXw6o9HMsutFjg_64BNQmcl-ysnLOUbiW4LwpLPa3Z5FjNcx7LYQ3TC0vdU9jl3afNyHMnhi7savlozF164kacpSxi0TDyIxsRZdvZcwPyT2LTMFeviEVgZG1rmTmRzT2rMbKfNou-s0sC_lgM1EaG9FQxnsvzZDe7gHpxezoDU0NxtCB3Vb3nLf1gKwXAG0YClbemvXEL_XZtD64PMuhTMlcPBEm21hR_Tk4'
-    },
-    {
-      id: 2,
-      name: 'مودرن ديزاين (الشرقاوي)',
-      code: '#SPL-4321',
-      phone: '0122 888 1122',
-      contactNotes: 'ردوده متأخرة',
-      debt: '٠',
+export class SuppliersList implements OnInit {
+  private http = inject(HttpClientService);
+  private router = inject(Router);
+
+  isLoading = signal(true);
+  error = signal<string | null>(null);
+  suppliers = signal<Supplier[]>([]);
+  stats = signal<SupplierStats | null>(null);
+
+  totalDebt = computed(() => {
+    if (this.stats()) {
+      return this.formatCurrency(this.stats()!.total_debt);
+    }
+    return this.calculateTotalDebt();
+  });
+
+  containersInRoute = computed(() => {
+    return this.stats()?.containers_in_route || 0;
+  });
+
+  lastPayment = computed(() => {
+    if (this.stats()) {
+      return this.formatCurrency(this.stats()!.last_payment_amount);
+    }
+    return this.findLastPayment();
+  });
+
+  ngOnInit() {
+    this.loadSuppliers();
+  }
+
+  loadSuppliers() {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    this.http.get<Supplier[]>('/suppliers').subscribe({
+      next: (data) => {
+        this.suppliers.set(data.map(s => this.mapSupplier(s)));
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load suppliers:', err);
+        this.error.set('فشل في تحميل بيانات الموردين');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  private mapSupplier(data: any): Supplier {
+    return {
+      id: data.id,
+      name: data.name || 'بدون اسم',
+      code: `#SPL-${String(data.id).padStart(4, '0')}`,
+      phone: data.phone || 'غير متوفر',
+      contactNotes: data.notes || 'بدون ملاحظات',
+      debt: this.formatCurrency(data.outstanding_balance || 0),
       lastPaymentDate: '---',
       lastPaymentAmount: '',
-      status: 'inactive',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBxTkaToLq70uqdWLwRYWerlC8zf9n3d8K7hgVGiwD56OvSkZyufdad9ypaskrLuBddGj2g3pbGnhVCCFv85jyPZE3Zi2w2UO15KBKIlUe18ipqH5GCOQk3075iCITk4Mby7uIki6IqhCj7Y4pQXENDFOHS_mY_gxMtUfneo-HQKO_2dsBfiuyHLCmU1ZIModa0KizxZzxLc1TuG7fwSDEG8hrvbBZSOAaCqxoPjXHAhGL9BhnerVGsdkJruc-cd2-74wbK9qnNWVY'
-    },
-    {
-      id: 3,
-      name: 'هوم ستايل للإكسسوارات',
-      code: '#SPL-8812',
-      phone: '0111 223 3445',
-      contactNotes: 'مورد مفضل',
-      debt: '٨٢٠,٥٠٠',
-      lastPaymentDate: '٠٢ نوفمبر ٢٠٢٣',
-      lastPaymentAmount: '٥٠,٠٠٠ ج.م',
-      status: 'active',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCPcCcW3xx5bYmM6nGJ0c0rUDdCy8lrMlEKN0T6m4mXJgTi7q5fMv15nCveC4DNySh8LXjNZOBXQYwqgCpsEG3rAYoAjS_yF_mybQ9NhesQkdt7Cs-5g6IAzSEtee3e6OfBMiKEn0Zi7GR7C7dLOvT-6UA0HDVUOICd2hdaTP7AoPl5fyLx4YEf0sqUa57yGjRcNy-dwNJ0_N2uwY9i0DSH1BAQty3zocKl3HOZX8DbBuRXIvtcMIpm0aHDD1PvRqvL4aNqCjZKm5Y'
-    }
-  ]);
+      status: data.status || 'inactive',
+      imageUrl: this.generateAvatar(data.name),
+      outstanding_balance: data.outstanding_balance || 0,
+      total_paid_lifetime: data.total_paid_lifetime || 0
+    };
+  }
 
-  totalDebt = signal('١,٤٢٠,٠٠٠');
-  containersInRoute = signal('٠٤');
-  lastPayment = signal('٢٥٠,٠٠٠');
+  private calculateTotalDebt(): string {
+    const total = this.suppliers().reduce((sum, s) => sum + s.outstanding_balance, 0);
+    return this.formatCurrency(total);
+  }
+
+  private findLastPayment(): string {
+    const supplierWithLastPayment = this.suppliers()
+      .filter(s => s.total_paid_lifetime > 0)
+      .sort((a, b) => b.total_paid_lifetime - a.total_paid_lifetime)[0];
+
+    if (supplierWithLastPayment) {
+      return this.formatCurrency(supplierWithLastPayment.total_paid_lifetime);
+    }
+    return '٠';
+  }
+
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat('ar-EG', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(value);
+  }
+
+  private generateAvatar(name: string): string {
+    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colors = [
+      '#e8c46a', '#ffb781', '#c5c5e1', '#ffb4ab', '#cba851'
+    ];
+    const color = colors[hash % colors.length];
+    const initial = name.charAt(0) || '?';
+
+    return `data:image/svg+xml,${encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+        <rect width="48" height="48" fill="${color}"/>
+        <text x="24" y="30" font-size="24" font-weight="bold" fill="#3e2e00" text-anchor="middle">
+          ${initial}
+        </text>
+      </svg>
+    `)}`;
+  }
 }

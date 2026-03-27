@@ -50,58 +50,90 @@
   </div>
 
   <!-- Shipments Table -->
-  <div class="bg-surface-container-low rounded-xl overflow-hidden">
-    <table class="w-full text-right border-collapse">
-      <thead>
-        <tr class="bg-surface-container-lowest/50 text-outline-variant">
-          <th class="px-8 py-5 font-headline font-bold text-xs">التاريخ</th>
-          <th class="px-6 py-5 font-headline font-bold text-xs">المورد</th>
-          <th class="px-6 py-5 font-headline font-bold text-xs text-left">القيمة المعلنة</th>
-          <th class="px-6 py-5 font-headline font-bold text-xs text-left">المدفوع</th>
-          <th class="px-6 py-5 font-headline font-bold text-xs text-left">الباقي</th>
-          <th class="px-6 py-5 font-headline font-bold text-xs text-center">الحالة</th>
-          <th class="px-8 py-5"></th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-outline-variant/5">
-        @for (shipment of shipments(); track shipment.id) {
-          <tr class="hover:bg-surface-container-high/40 transition-colors group">
-            <td class="px-8 py-6 font-label text-sm text-on-surface-variant">{{ shipment.date }}</td>
-            <td class="px-6 py-6" [routerLink]="['/shipments', shipment.id]">
-              <div class="flex items-center gap-3 cursor-pointer">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs" 
-                     [ngClass]="{
-                       'bg-primary/10 text-primary': shipment.supplierColor === 'primary',
-                       'bg-secondary/10 text-secondary': shipment.supplierColor === 'secondary',
-                       'bg-tertiary/10 text-tertiary': shipment.supplierColor === 'tertiary'
-                     }">
-                  {{ shipment.supplierInitial }}
-                </div>
-                <span class="font-headline font-medium text-sm group-hover:text-primary transition-colors">{{ shipment.supplier }}</span>
-              </div>
-            </td>
-            <td class="px-6 py-6 font-label text-sm text-on-surface text-left">{{ shipment.totalValue }}</td>
-            <td class="px-6 py-6 font-label text-sm text-secondary text-left">{{ shipment.paidValue }}</td>
-            <td class="px-6 py-6 font-label text-sm text-left" [ngClass]="shipment.remainingValue !== '0 ج.م' ? 'text-error/80' : 'text-outline-variant'">{{ shipment.remainingValue }}</td>
-            <td class="px-6 py-6 text-center">
-              <span class="text-[10px] font-bold font-headline px-3 py-1 rounded-full border"
-                    [ngClass]="{
-                      'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': shipment.status === 'fully-paid',
-                      'bg-amber-500/10 text-amber-400 border-amber-500/20': shipment.status === 'installments',
-                      'bg-error/10 text-error border-error/20': shipment.status === 'not-paid'
-                    }">
-                {{ shipment.statusLabel }}
-              </span>
-            </td>
-            <td class="px-8 py-6 text-left">
-              <button class="p-2 text-outline-variant hover:text-primary transition-colors">
-                <span class="material-symbols-outlined">&#xe5d4;</span>
-              </button>
-            </td>
+  <div class="bg-surface-container-low rounded-xl overflow-hidden relative min-h-[400px]">
+    @if (isLoading()) {
+      <div class="absolute inset-0 bg-surface-container-low/60 backdrop-blur-sm flex flex-col items-center justify-center z-20">
+        <div class="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+        <p class="text-sm font-headline text-outline-variant">جاري تحميل الشحنات...</p>
+      </div>
+    }
+
+    @if (error()) {
+      <div class="p-12 text-center">
+        <span class="material-symbols-outlined text-5xl text-error mb-4">error</span>
+        <p class="text-on-surface font-headline mb-4">{{ error() }}</p>
+        <button (click)="loadShipments()" class="text-primary hover:underline font-bold">إعادة المحاولة</button>
+      </div>
+    } @else {
+      <table class="w-full text-right border-collapse">
+        <thead>
+          <tr class="bg-surface-container-lowest/50 text-outline-variant">
+            <th class="px-8 py-5 font-headline font-bold text-xs">التاريخ / الحاوية</th>
+            <th class="px-6 py-5 font-headline font-bold text-xs">المورد</th>
+            <th class="px-6 py-5 font-headline font-bold text-xs text-left">القيمة</th>
+            <th class="px-6 py-5 font-headline font-bold text-xs text-left">المدفوع</th>
+            <th class="px-6 py-5 font-headline font-bold text-xs text-left">الباقي</th>
+            <th class="px-6 py-5 font-headline font-bold text-xs text-center">الحالة</th>
+            <th class="px-8 py-5"></th>
           </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/5">
+          @if (shipments().length === 0 && !isLoading()) {
+            <tr>
+              <td colspan="7" class="px-8 py-20 text-center color-outline-variant">
+                <span class="material-symbols-outlined text-6xl opacity-20 mb-4">inventory_2</span>
+                <p class="font-headline">لا توجد شحنات مسجلة حالياً</p>
+              </td>
+            </tr>
+          }
+          @for (shipment of shipments(); track shipment.id) {
+            <tr class="hover:bg-surface-container-high/40 transition-colors group border-none">
+              <td class="px-8 py-6 font-label text-sm text-on-surface-variant">
+                <div class="flex flex-col">
+                  <span class="text-on-surface font-bold">{{ shipment.container_number || 'بدون رقم' }}</span>
+                  <span class="text-[10px] opacity-60">{{ shipment.date_received | date:'dd MMM yyyy' }}</span>
+                </div>
+              </td>
+              <td class="px-6 py-6" [routerLink]="['/shipments', shipment.id]">
+                <div class="flex items-center gap-3 cursor-pointer">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs" 
+                       [ngClass]="{
+                         'bg-primary/10 text-primary': getSupplierColor(shipment.supplier_id) === 'primary',
+                         'bg-secondary/10 text-secondary': getSupplierColor(shipment.supplier_id) === 'secondary',
+                         'bg-tertiary/10 text-tertiary': getSupplierColor(shipment.supplier_id) === 'tertiary'
+                       }">
+                    {{ getSupplierInitial(shipment.supplier_name) }}
+                  </div>
+                  <span class="font-headline font-medium text-sm group-hover:text-primary transition-colors text-on-surface">
+                    {{ shipment.supplier_name || 'مورد مجهول' }}
+                  </span>
+                </div>
+              </td>
+              <td class="px-6 py-6 font-label text-sm text-on-surface text-left">{{ formatCurrency(shipment.declared_value) }}</td>
+              <td class="px-6 py-6 font-label text-sm text-secondary text-left">{{ formatCurrency(shipment.total_paid) }}</td>
+              <td class="px-6 py-6 font-label text-sm text-left" [ngClass]="shipment.declared_value - shipment.total_paid > 0 ? 'text-error/80' : 'text-outline-variant'">
+                {{ formatCurrency(shipment.declared_value - shipment.total_paid) }}
+              </td>
+              <td class="px-6 py-6 text-center">
+                <span class="text-[10px] font-bold font-headline px-3 py-1 rounded-full border"
+                      [ngClass]="{
+                        'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': shipment.payment_status === 'FULL',
+                        'bg-amber-500/10 text-amber-400 border-amber-500/20': shipment.payment_status === 'PARTIAL',
+                        'bg-error/10 text-error border-error/20': shipment.payment_status === 'NOT_PAID'
+                      }">
+                  {{ getStatusLabel(shipment.payment_status) }}
+                </span>
+              </td>
+              <td class="px-8 py-6 text-left">
+                <button class="p-2 text-outline-variant hover:text-primary transition-colors">
+                  <span class="material-symbols-outlined">&#xe5d4;</span>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
     <!-- Pagination -->
     <div class="p-6 bg-surface-container-lowest/30 flex justify-between items-center border-t border-outline-variant/10">
       <p class="text-xs text-outline-variant font-label">عرض 1-4 من أصل {{ shipments().length }} شحنة</p>

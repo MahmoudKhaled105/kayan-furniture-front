@@ -1,15 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-
-interface Installment {
-  id: number;
-  date: string;
-  amount: string;
-  type: string;
-  status: 'paid' | 'pending';
-  receiptNumber: string;
-}
+import { ShipmentService, Shipment } from '../../../shared/services/shipment.service';
 
 @Component({
   selector: 'app-shipment-details',
@@ -18,25 +10,61 @@ interface Installment {
   templateUrl: './shipment-details.html',
   styleUrl: './shipment-details.scss',
 })
-export class ShipmentDetails {
-  shipment = signal({
-    number: 'CNT-2024-075',
-    supplier: 'إيطاليان ديزاين',
-    arrivalDate: '28 يناير 2024',
-    totalValue: '820,000',
-    paidValue: '300,000',
-    remainingValue: '520,000',
-    itemCount: 28,
-    status: 'in-transit',
-    statusLabel: 'في الطريق (البحر)'
-  });
+export class ShipmentDetails implements OnInit {
+  private route = inject(ActivatedRoute);
+  private shipmentService = inject(ShipmentService);
+  
+  shipment = signal<Shipment | null>(null);
+  isLoading = signal(true);
+  error = signal<string | null>(null);
 
-  installments = signal<Installment[]>([
-    { id: 1, date: '01 فبراير 2024', amount: '150,000', type: 'تحويل بنكي', status: 'paid', receiptNumber: 'REC-99201' },
-    { id: 2, date: '15 فبراير 2024', amount: '150,000', type: 'كاش', status: 'paid', receiptNumber: 'REC-99450' },
-    { id: 3, date: '01 مارس 2024', amount: '200,000', type: 'شيك', status: 'pending', receiptNumber: '---' },
-    { id: 4, date: '15 مارس 2024', amount: '320,000', type: 'شيك', status: 'pending', receiptNumber: '---' }
-  ]);
+  ngOnInit() {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (id) {
+      this.loadShipment(id);
+    }
+  }
 
-  constructor(private route: ActivatedRoute) {}
+  loadShipment(id: number) {
+    this.isLoading.set(true);
+    this.shipmentService.getShipment(id).subscribe({
+      next: (data) => {
+        this.shipment.set(data);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load shipment:', err);
+        this.error.set('فشل في تحميل بيانات الشحنة');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  get paidPercentage(): number {
+    const data = this.shipment();
+    if (!data || data.declared_value === 0) return 0;
+    return Math.round((data.total_paid / data.declared_value) * 100);
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('ar-EG').format(value);
+  }
+
+  getStatusLabel(status?: string): string {
+    switch (status) {
+      case 'FULL': return 'خالصة';
+      case 'PARTIAL': return 'متقسطة';
+      case 'NOT_PAID': return 'لسه مدفعش';
+      default: return 'غير معروف';
+    }
+  }
+
+  getLogisticStatus(status?: string): string {
+    switch (status) {
+      case 'ARRIVED': return 'وصلت بالسلامة';
+      case 'IN_TRANSIT': return 'في الطريق (البحر)';
+      case 'PENDING': return 'قيد التجهيز';
+      default: return 'غير معروف';
+    }
+  }
 }

@@ -1,19 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-
-interface Shipment {
-  id: number;
-  date: string;
-  supplier: string;
-  supplierInitial: string;
-  supplierColor: string;
-  totalValue: string;
-  paidValue: string;
-  remainingValue: string;
-  status: 'fully-paid' | 'installments' | 'not-paid';
-  statusLabel: string;
-}
+import { ShipmentService, Shipment } from '../../../shared/services/shipment.service';
 
 @Component({
   selector: 'app-shipments-list',
@@ -22,57 +10,60 @@ interface Shipment {
   templateUrl: './shipments-list.html',
   styleUrl: './shipments-list.scss',
 })
-export class ShipmentsList {
-  shipments = signal<Shipment[]>([
-    {
-      id: 1,
-      date: '24 مايو 2024',
-      supplier: 'مصنع الشرق للأثاث',
-      supplierInitial: 'م',
-      supplierColor: 'primary',
-      totalValue: '450,000 ج.م',
-      paidValue: '450,000 ج.م',
-      remainingValue: '0 ج.م',
-      status: 'fully-paid',
-      statusLabel: 'خالصة'
-    },
-    {
-      id: 2,
-      date: '18 مايو 2024',
-      supplier: 'إيطاليان ديزاين',
-      supplierInitial: 'إ',
-      supplierColor: 'secondary',
-      totalValue: '820,000 ج.م',
-      paidValue: '300,000 ج.م',
-      remainingValue: '520,000 ج.م',
-      status: 'installments',
-      statusLabel: 'متقسطة'
-    },
-    {
-      id: 3,
-      date: '12 مايو 2024',
-      supplier: 'توريدات الرواد',
-      supplierInitial: 'ت',
-      supplierColor: 'tertiary',
-      totalValue: '1,200,000 ج.م',
-      paidValue: '0 ج.م',
-      remainingValue: '1,200,000 ج.م',
-      status: 'not-paid',
-      statusLabel: 'لسه مدفعش'
-    },
-    {
-      id: 4,
-      date: '05 مايو 2024',
-      supplier: 'مودرن هوم',
-      supplierInitial: 'م',
-      supplierColor: 'primary',
-      totalValue: '215,000 ج.م',
-      paidValue: '215,000 ج.م',
-      remainingValue: '0 ج.م',
-      status: 'fully-paid',
-      statusLabel: 'خالصة'
-    }
-  ]);
+export class ShipmentsList implements OnInit {
+  private shipmentService = inject(ShipmentService);
+  
+  shipments = signal<Shipment[]>([]);
+  isLoading = signal(true);
+  error = signal<string | null>(null);
+  
+  totalDebts = signal('0 ج.م');
 
-  totalDebts = signal('1,450,200 ج.م');
+  ngOnInit() {
+    this.loadShipments();
+  }
+
+  loadShipments() {
+    this.isLoading.set(true);
+    this.shipmentService.getShipments().subscribe({
+      next: (data) => {
+        this.shipments.set(data);
+        this.calculateTotalDebts(data);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load shipments:', err);
+        this.error.set('فشل في تحميل الشحنات');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  calculateTotalDebts(shipments: Shipment[]) {
+    const total = shipments.reduce((sum, s) => sum + (s.declared_value - s.total_paid), 0);
+    this.totalDebts.set(this.formatCurrency(total) + ' ج.م');
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('ar-EG').format(value);
+  }
+
+  getSupplierInitial(name?: string): string {
+    if (!name) return '?';
+    return name.charAt(0);
+  }
+
+  getSupplierColor(id: number): string {
+    const colors = ['primary', 'secondary', 'tertiary'];
+    return colors[id % colors.length];
+  }
+
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'FULL': return 'خالصة';
+      case 'PARTIAL': return 'متقسطة';
+      case 'NOT_PAID': return 'لسه مدفعش';
+      default: return 'غير معروف';
+    }
+  }
 }

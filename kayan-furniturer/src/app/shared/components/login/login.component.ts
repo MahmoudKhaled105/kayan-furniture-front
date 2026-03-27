@@ -66,7 +66,7 @@ export class LoginComponent {
         });
       });
 
-      this.router.navigate(['/suppliers']);
+      this.router.navigate(['/dashboard']);
     } catch (err: any) {
       this.error.set(err?.message || 'فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.');
     } finally {

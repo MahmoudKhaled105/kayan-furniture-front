@@ -1,12 +1,12 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
 import { DashboardService, DashboardOverview, Transaction } from './dashboard.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -40,11 +40,11 @@ export class DashboardComponent implements OnInit {
     this.error.set(null);
 
     this.dashboardService.getOverview().subscribe({
-      next: (data) => {
+      next: (data: DashboardOverview) => {
         this.overview.set(data);
         this.isLoading.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Failed to load dashboard data:', err);
         this.error.set('فشل في تحميل بيانات لوحة التحكم');
         this.isLoading.set(false);
@@ -82,6 +82,10 @@ export class DashboardComponent implements OnInit {
 
   navigateToSales() {
     this.router.navigate(['/sales']);
+  }
+
+  navigateToCustomers() {
+    this.router.navigate(['/customers']);
   }
 
   logout() {

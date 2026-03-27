@@ -4,17 +4,34 @@
 
 :root {
   --background: #131313;
-  --surface: #1c1c1e;
-  --surface-container: #1c1c1e;
-  --surface-container-low: #252529;
-  --surface-container-highest: #2c2c2e;
+  --surface: #131313;
+  --surface-container: #20201f;
+  --surface-container-low: #1c1b1b;
+  --surface-container-high: #2a2a2a;
+  --surface-container-highest: #353535;
+  --surface-container-lowest: #0e0e0e;
+  --surface-bright: #393939;
   --on-background: #e5e2e1;
-  --on-surface: #ffffff;
-  --on-surface-variant: #a0a0a0;
-  --primary: #007aff;
-  --on-primary: #ffffff;
-  --error: #ff3b30;
-  --outline-variant: #2a2a2e;
+  --on-surface: #e5e2e1;
+  --on-surface-variant: #d4c4b7;
+  --primary: #e8c46a;
+  --primary-container: #cba851;
+  --on-primary: #3e2e00;
+  --on-primary-container: #523d00;
+  --secondary: #ffb781;
+  --secondary-container: #924c00;
+  --on-secondary: #4e2600;
+  --secondary-fixed-dim: #ffb781;
+  --tertiary: #c5c5e1;
+  --error: #ffb4ab;
+  --outline-variant: #50453b;
+  --gray-400: #a0a0a0;
+  --gray-500: #7a7a7a;
+  --white: #ffffff;
+
+  --headline-font: 'IBM Plex Sans Arabic', 'Manrope';
+  --body-font: 'Inter', 'IBM Plex Sans Arabic';
+  --label-font: 'Manrope', 'IBM Plex Sans Arabic';
 }
 
 .material-symbols-outlined {

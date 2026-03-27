@@ -24,9 +24,10 @@ export class HttpClientService {
     });
   }
 
-  get<T>(url: string): Observable<T> {
+  get<T>(url: string, params?: any): Observable<T> {
     return this.http.get<T>(`${this.baseUrl}${url}`, {
-      headers: this.getAuthHeaders()
+      headers: this.getAuthHeaders(),
+      params: params
     }).pipe(
       catchError((error: any) => {
         if (error.status === 401) {

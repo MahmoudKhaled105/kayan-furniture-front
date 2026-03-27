@@ -1,4 +1,11 @@
-<section class="mt-24 px-10 pb-20 max-w-6xl">
+<section class="mt-24 px-10 pb-20 max-w-6xl relative">
+  @if (isLoading()) {
+    <div class="absolute inset-0 bg-background/60 backdrop-blur-md flex flex-col items-center justify-center z-50 rounded-3xl">
+      <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-6"></div>
+      <p class="text-lg font-headline text-on-surface/80">جاري حفظ بيانات الشحنة...</p>
+    </div>
+  }
+
   <!-- Stepper Header -->
   <div class="flex items-center justify-between mb-16">
     <div class="flex-1">
@@ -23,7 +30,7 @@
     </div>
   </div>
 
-  <form class="grid grid-cols-12 gap-10" (submit)="$event.preventDefault()">
+  <form [formGroup]="shipmentForm" class="grid grid-cols-12 gap-10" (submit)="onSubmit()">
     <!-- Form Content -->
     <div class="col-span-8 space-y-8">
       <!-- Step 1: Basic Info -->
@@ -36,19 +43,28 @@
           <div class="grid grid-cols-2 gap-8">
             <div class="space-y-2">
               <label class="text-xs font-bold text-outline-variant mr-1">رقم الحاوية (رقم تعريفي)</label>
-              <input class="w-full bg-surface-container-lowest border-none rounded-xl px-6 py-5 text-on-surface focus:ring-1 focus:ring-primary/40 font-manrope outline-none transition-all" placeholder="مثلاً: CNT-2024-X11" type="text"/>
+              <input formControlName="container_number" class="w-full bg-surface-container-lowest border-none rounded-xl px-6 py-5 text-on-surface focus:ring-1 focus:ring-primary/40 font-manrope outline-none transition-all" placeholder="مثلاً: CNT-2024-X11" type="text"/>
+              @if (shipmentForm.get('container_number')?.touched && shipmentForm.get('container_number')?.invalid) {
+                <p class="text-[10px] text-error mt-1 mr-2">هذا الحقل مطلوب</p>
+              }
             </div>
             <div class="space-y-2">
-              <label class="text-xs font-bold text-outline-variant mr-1">تاريخ الوصول المتوقع</label>
+              <label class="text-xs font-bold text-outline-variant mr-1">تاريخ الاستلام الفعلي</label>
               <div class="relative">
-                <input class="w-full bg-surface-container-lowest border-none rounded-xl pr-6 pl-12 py-5 text-on-surface focus:ring-1 focus:ring-primary/40 outline-none transition-all" type="date"/>
+                <input formControlName="date_received" class="w-full bg-surface-container-lowest border-none rounded-xl pr-6 pl-12 py-5 text-on-surface focus:ring-1 focus:ring-primary/40 outline-none transition-all" type="date"/>
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant">&#xebcc;</span>
               </div>
             </div>
           </div>
+          <div class="grid grid-cols-2 gap-8">
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-outline-variant mr-1">تاريخ الوصول المتوقع للميناء</label>
+              <input formControlName="estimated_arrival" class="w-full bg-surface-container-lowest border-none rounded-xl px-6 py-5 text-on-surface focus:ring-1 focus:ring-primary/40 outline-none transition-all" type="date"/>
+            </div>
+          </div>
           <div class="space-y-2">
             <label class="text-xs font-bold text-outline-variant mr-1">ملاحظات التوقيت (نأكد على إيه؟)</label>
-            <textarea class="w-full bg-surface-container-lowest border-none rounded-xl px-6 py-5 text-on-surface focus:ring-1 focus:ring-primary/40 outline-none h-32 resize-none transition-all" placeholder="مثلاً: الشحنة دي لازم تتحرك من المينا قبل يوم ١٠ عشان الغرامات"></textarea>
+            <textarea formControlName="notes" class="w-full bg-surface-container-lowest border-none rounded-xl px-6 py-5 text-on-surface focus:ring-1 focus:ring-primary/40 outline-none h-32 resize-none transition-all" placeholder="مثلاً: الشحنة دي لازم تتحرك من المينا قبل يوم ١٠ عشان الغرامات"></textarea>
           </div>
         </div>
       }
@@ -59,34 +75,39 @@
           <div class="flex justify-between items-center mb-2">
             <div class="flex items-center gap-3 text-secondary">
               <span class="material-symbols-outlined text-3xl">&#xebe7;</span>
-              <h3 class="font-black font-headline text-xl">اختيار الموردين المشاركين</h3>
+              <h3 class="font-black font-headline text-xl">اختيار المورد</h3>
             </div>
-            <button class="text-xs font-bold text-secondary bg-secondary/10 px-4 py-2 rounded-lg border border-secondary/20 hover:bg-secondary/20 transition-all">+ اختيار مورد</button>
           </div>
-          <div class="space-y-4">
-            <div class="bg-surface-container-lowest p-6 rounded-2xl flex items-center justify-between border border-white/5 border-r-4 border-r-secondary">
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full overflow-hidden border border-secondary/30">
-                  <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxY7gNKoyt3sIm8qzdxSWmdBf1P3OZs3dbHJ58dpnXw6o9HMsutFjg_64BNQmcl-ysnLOUbiW4LwpLPa3Z5FjNcx7LYQ3TC0vdU9jl3afNyHMnhi7savlozF164kacpSxi0TDyIxsRZdvZcwPyT2LTMFeviEVgZG1rmTmRzT2rMbKfNou-s0sC_lgM1EaG9FQxnsvzZDe7gHpxezoDU0NxtCB3Vb3nLf1gKwXAG0YClbemvXEL_XZtD64PMuhTMlcPBEm21hR_Tk4"/>
-                </div>
-                <div>
-                  <h4 class="font-bold text-on-surface">الأندلسي للأخشاب</h4>
-                  <p class="text-[10px] text-outline-variant">كود: #SPL-9902</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-4">
-                <div class="text-left">
-                  <p class="text-[10px] text-outline-variant font-bold uppercase mb-1">القيمة المعلنة</p>
-                  <input class="bg-surface-container-low border-none rounded-lg py-2 px-4 text-sm font-manrope text-on-surface w-32 focus:ring-1 focus:ring-secondary/40 outline-none text-left" placeholder="0.00" type="text"/>
-                </div>
-                <button class="text-error/30 hover:text-error transition-colors p-2 mt-4">
-                  <span class="material-symbols-outlined">&#xe872;</span>
-                </button>
-              </div>
+          <div class="space-y-6">
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-outline-variant mr-1">المورد الأساسي للشحنة</label>
+              <select formControlName="supplier_id" class="w-full bg-surface-container-lowest border-none rounded-xl px-6 py-5 text-on-surface focus:ring-1 focus:ring-secondary/40 outline-none transition-all appearance-none cursor-pointer">
+                <option [value]="null">اختر مورد...</option>
+                @for (supplier of suppliers(); track supplier.id) {
+                  <option [value]="supplier.id">{{ supplier.name }} ({{ supplier.type }})</option>
+                }
+              </select>
+              @if (shipmentForm.get('supplier_id')?.touched && shipmentForm.get('supplier_id')?.invalid) {
+                <p class="text-[10px] text-error mt-1 mr-2">يجب اختيار مورد</p>
+              }
             </div>
-            <p class="text-center py-6 border-2 border-dashed border-white/5 rounded-2xl text-outline-variant text-[11px] font-headline">
-              يمكنك إضافة أكثر من مورد لنفس الحاوية في حالة تجميع بضائع متنوعة.
-            </p>
+
+            @if (selectedSupplier) {
+              <div class="bg-surface-container-lowest p-6 rounded-2xl flex items-center justify-between border border-white/5 border-r-4 border-r-secondary animate-in zoom-in-95 duration-300">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-full overflow-hidden border border-secondary/30 bg-secondary/10 flex items-center justify-center font-bold text-secondary">
+                    {{ selectedSupplier.name.charAt(0) }}
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-on-surface">{{ selectedSupplier.name }}</h4>
+                    <p class="text-[10px] text-outline-variant">كود: #SPL-{{ selectedSupplier.id }}</p>
+                  </div>
+                </div>
+                <div class="text-secondary">
+                  <span class="material-symbols-outlined">check_circle</span>
+                </div>
+              </div>
+            }
           </div>
         </div>
       }
@@ -96,28 +117,30 @@
         <div class="bg-surface-container-high p-10 rounded-3xl space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
           <div class="flex items-center gap-3 text-emerald-400 mb-2">
             <span class="material-symbols-outlined text-3xl">&#xe850;</span>
-            <h3 class="font-black font-headline text-xl">تفاصيل التقسيط والحسابات</h3>
+            <h3 class="font-black font-headline text-xl">تفاصيل القيمة والمبالغ المدفوعة</h3>
           </div>
           <div class="grid grid-cols-2 gap-8">
             <div class="space-y-2">
-              <label class="text-xs font-bold text-outline-variant mr-1">إجمالي تكلفة الشحنة (بالجمرك)</label>
-              <input class="w-full bg-surface-container-lowest border-none rounded-xl px-6 py-5 text-on-surface focus:ring-1 focus:ring-emerald-400/40 font-manrope outline-none transition-all" placeholder="0.00 ج.م" type="text"/>
+              <label class="text-xs font-bold text-outline-variant mr-1">القيمة الإجمالية المعلنة (بالعملة المحلية)</label>
+              <input formControlName="declared_value" class="w-full bg-surface-container-lowest border-none rounded-xl px-6 py-5 text-on-surface focus:ring-1 focus:ring-emerald-400/40 font-manrope outline-none transition-all" placeholder="0.00 ج.م" type="number"/>
+              @if (shipmentForm.get('declared_value')?.touched && shipmentForm.get('declared_value')?.invalid) {
+                <p class="text-[10px] text-error mt-1 mr-2">القيمة يجب أن تكون أكبر من ٠</p>
+              }
             </div>
             <div class="space-y-2">
-              <label class="text-xs font-bold text-outline-variant mr-1">المقدم المدفوع حياً</label>
-              <input class="w-full bg-surface-container-lowest border-none rounded-xl px-6 py-5 text-secondary focus:ring-1 focus:ring-secondary/40 font-manrope outline-none transition-all" placeholder="0.00 ج.م" type="text"/>
+              <label class="text-xs font-bold text-outline-variant mr-1">المبلغ المدفوع حياً (مقدم)</label>
+              <input formControlName="total_paid" class="w-full bg-surface-container-lowest border-none rounded-xl px-6 py-5 text-secondary focus:ring-1 focus:ring-secondary/40 font-manrope outline-none transition-all" placeholder="0.00 ج.م" type="number"/>
             </div>
           </div>
-          <div class="p-6 bg-surface-container-lowest rounded-2xl border border-white/5">
-            <h5 class="text-sm font-bold text-on-surface mb-6 flex items-center justify-between">
-              جدول الأقساط المقترح
-              <button class="text-[10px] text-emerald-400 border border-emerald-400/20 px-3 py-1 rounded-md hover:bg-emerald-400/10 transition-all">+ قسط</button>
-            </h5>
-            <div class="space-y-3">
-              <div class="flex items-center gap-4 bg-surface-container-high/30 p-4 rounded-xl">
-                <span class="w-8 h-8 rounded-full bg-surface-container-lowest text-outline-variant text-[10px] flex items-center justify-center font-bold">1</span>
-                <input class="flex-1 bg-transparent border-none text-xs outline-none focus:ring-0" type="date"/>
-                <input class="w-32 bg-surface-container-high/50 border-none rounded-lg py-2 px-3 text-xs font-manrope text-left" placeholder="0.00 ج.م" type="text"/>
+          
+          <div class="p-6 bg-surface-container-lowest rounded-2xl border border-white/5 border-emerald-400/10">
+            <div class="flex justify-between items-center">
+              <div>
+                <h5 class="text-lg font-black text-on-surface mb-1">المبلغ المتبقي للمورد</h5>
+                <p class="text-xs text-outline-variant">سيتم تسجيله كمديونية على هذا المورد</p>
+              </div>
+              <div class="text-3xl font-black font-manrope text-emerald-400">
+                {{ shipmentForm.get('declared_value')?.value - shipmentForm.get('total_paid')?.value | number:'1.0-0' }} ج.م
               </div>
             </div>
           </div>
@@ -154,21 +177,22 @@
         <h4 class="font-black font-headline text-lg mb-8">ملخص البيانات</h4>
         <div class="space-y-6">
           <div class="flex justify-between items-center text-xs">
-            <span class="text-outline-variant font-headline">إجمالي الحاوية</span>
-            <span class="font-manrope font-bold text-on-surface">--- ج.م</span>
+            <span class="text-outline-variant font-headline">رقم الحاوية</span>
+            <span class="font-manrope font-bold text-on-surface">{{ shipmentForm.get('container_number')?.value || '---' }}</span>
           </div>
           <div class="flex justify-between items-center text-xs">
-            <span class="text-outline-variant font-headline">عدد الموردين</span>
-            <span class="font-manrope font-bold text-on-surface">0 موردين</span>
+            <span class="text-outline-variant font-headline">المورد</span>
+            <span class="font-headline font-bold text-on-surface">{{ selectedSupplier?.name || '---' }}</span>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-outline-variant font-headline">إجمالي القيمة</span>
+            <span class="font-manrope font-bold text-on-surface">{{ shipmentForm.get('declared_value')?.value | number:'1.0-0' }} ج.م</span>
           </div>
           <div class="border-t border-white/5 pt-6 space-y-4">
             <p class="text-[10px] text-outline-variant font-headline leading-relaxed">
-              * بمجرد الحفظ، الحسابات هتعرف بالمبالغ وهينزل كشف حساب لكل مورد حسب حصته المعلنة هنا.
+              * بمجرد الحفظ، سيتم تسجيل المديونية وتعديل كشف حساب المورد وإضافتها لجدول تتبع الحاويات.
             </p>
           </div>
-        </div>
-        <div class="mt-12 opacity-20 pointer-events-none">
-          <span class="material-symbols-outlined text-9xl absolute -bottom-10 -right-10">&#xe558;</span>
         </div>
       </div>
     </div>

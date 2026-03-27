@@ -1,165 +1,215 @@
-<div class="pt-4">
-  <!-- Supplier Header Section -->
-  <section class="mb-10">
-    <div class="flex items-end justify-between mb-8">
-      <div class="space-y-2">
-        <nav class="flex items-center gap-2 text-outline text-[10px] mb-2 uppercase tracking-widest font-bold">
-          <a routerLink="/suppliers" class="hover:text-primary">الموردين</a>
-          <span class="material-symbols-outlined text-[10px]">&#xe5cb;</span>
-          <span class="text-primary-container">تفاصيل المورد</span>
-        </nav>
-        <h2 class="text-5xl font-black tracking-tight text-on-background">تفاصيل المورد: <span class="text-primary">{{ supplier().name }}</span></h2>
-        <div class="flex items-center gap-4 pt-2">
-          <div class="flex items-center gap-2 bg-surface-container-high px-3 py-1.5 rounded-lg">
-            <span class="material-symbols-outlined text-secondary text-sm">&#xe0b0;</span>
-            <span class="text-sm font-medium tracking-wider">{{ supplier().phone }}</span>
+<div class="supplier-details-container" dir="rtl" lang="ar">
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p class="text-on-surface-variant">جاري تحميل بيانات المورد...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <span class="material-symbols-outlined text-6xl text-error">error</span>
+      <p class="text-error text-xl mb-4">{{ error() }}</p>
+      <button class="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold" (click)="retry()">
+        إعادة المحاولة
+      </button>
+    </div>
+  } @else {
+    <!-- Supplier Header Section -->
+    <header class="supplier-header">
+      <div class="header-content">
+        <div class="breadcrumbs">
+          <a routerLink="/suppliers" class="breadcrumb-link">الموردين</a>
+          <span class="material-symbols-outlined separator">chevron_left</span>
+          <span class="breadcrumb-current">تفاصيل المورد</span>
+        </div>
+        <h2 class="supplier-title">
+          تفاصيل المورد: <span class="supplier-name">{{ supplier()?.name }}</span>
+        </h2>
+        <div class="contact-info">
+          <div class="contact-item">
+            <span class="material-symbols-outlined icon">phone</span>
+            <span class="contact-value">{{ supplier()?.phone || 'غير متوفر' }}</span>
           </div>
-          <div class="flex items-center gap-2 bg-surface-container-high px-3 py-1.5 rounded-lg">
-            <span class="material-symbols-outlined text-outline text-sm">&#xe0c8;</span>
-            <span class="text-sm font-medium">{{ supplier().location }}</span>
+          <div class="contact-item">
+            <span class="material-symbols-outlined icon">location_on</span>
+            <span class="contact-value">{{ supplier()?.address || 'غير محدد' }}</span>
           </div>
         </div>
       </div>
-      <div class="flex gap-3">
-        <button class="px-6 py-3 bg-surface-container-highest text-primary font-bold rounded-xl transition-all hover:bg-surface-container flex items-center gap-2">
-          <span class="material-symbols-outlined">&#xe600;</span>
-          سدد دفعة
+      <div class="header-actions">
+        <button class="action-btn payment-btn">
+          <span class="material-symbols-outlined">payments</span>
+          <span>سدد دفعة</span>
         </button>
-        <button routerLink="/shipments/add" class="px-6 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold rounded-xl transition-all hover:opacity-90 flex items-center gap-2">
-          <span class="material-symbols-outlined">&#xe558;</span>
-          شحنة جديدة
+        <button routerLink="/shipments/add" class="action-btn shipment-btn">
+          <span class="material-symbols-outlined">add_circle</span>
+          <span>شحنة جديدة</span>
         </button>
       </div>
-    </div>
+    </header>
 
     <!-- Bento Stats Grid -->
-    <div class="grid grid-cols-12 gap-6">
-      <div class="col-span-7 bg-surface-container-low rounded-xl p-8 flex items-center justify-between border border-white/[0.03] relative overflow-hidden group">
-        <div class="absolute -right-10 -bottom-10 opacity-5 group-hover:scale-110 transition-transform duration-700">
-          <span class="material-symbols-outlined text-[180px]">&#xe84f;</span>
+    <section class="stats-grid">
+      <div class="stat-card stat-card-balance">
+        <span class="stat-icon-bg">
+          <span class="material-symbols-outlined stat-icon">account_balance_wallet</span>
+        </span>
+        <div class="stat-content">
+          <p class="stat-label">إجمالي اللي لينا (المستحقات)</p>
+          <h3 class="stat-value text-secondary">
+            {{ formatCurrency(summary()?.outstanding_balance || 0) }}
+            <span class="stat-unit">ج.م</span>
+          </h3>
+          @if (lastPaymentDelay > 14) {
+            <p class="stat-warning">
+              <span class="material-symbols-outlined">warning</span>
+              متأخر بقاله {{ lastPaymentDelay }} يوم
+            </p>
+          }
         </div>
-        <div class="relative z-10">
-          <p class="text-outline text-sm font-medium mb-1">إجمالي اللي لينا (المستحقات)</p>
-          <h3 class="text-6xl font-black text-secondary">{{ supplier().totalReceivables }} <span class="text-lg font-normal opacity-60">ج.م</span></h3>
-          <p class="text-xs text-error mt-4 flex items-center gap-1 font-medium">
-            <span class="material-symbols-outlined text-xs">&#xe002;</span>
-            متأخر بقاله {{ supplier().lastPaymentDelayedDays }} يوم
-          </p>
-        </div>
-        <div class="w-32 h-32 relative">
-          <svg class="w-full h-full transform -rotate-90">
-            <circle class="text-surface-container-highest" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-width="8"></circle>
-            <circle class="text-secondary" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-dasharray="364.42" [style.stroke-dashoffset]="364.42 - (364.42 * supplier().paidPercentage / 100)" stroke-width="8"></circle>
+        <div class="progress-circle">
+          <svg class="progress-svg" viewBox="0 0 128 128">
+            <circle class="progress-bg" cx="64" cy="64" r="58"></circle>
+            <circle class="progress-fill" cx="64" cy="64" r="58"
+              [attr.stroke-dashoffset]="364.42 - (364.42 * paidPercentage / 100)">
+            </circle>
           </svg>
-          <div class="absolute inset-0 flex items-center justify-center flex-col">
-            <span class="text-xl font-bold">{{ supplier().paidPercentage }}%</span>
-            <span class="text-[8px] uppercase tracking-tighter text-outline">مدفوع</span>
+          <div class="progress-text">
+            <span class="progress-value">{{ paidPercentage }}%</span>
+            <span class="progress-label">مدفوع</span>
           </div>
         </div>
       </div>
-      <div class="col-span-5 bg-surface-container-high rounded-xl p-8 border border-white/[0.05] relative overflow-hidden">
-        <div class="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full"></div>
-        <p class="text-outline text-sm font-medium mb-1">إجمالي اللي دفعناه (Lifetime)</p>
-        <h3 class="text-4xl font-bold text-on-background">{{ supplier().lifetimePaid }} <span class="text-sm font-normal opacity-50">ج.م</span></h3>
-        <div class="mt-8 space-y-3">
-          <div class="flex justify-between items-center text-xs">
-            <span class="text-outline">آخر دفعة</span>
-            <span class="font-bold">{{ supplier().lastPaymentAmount }} ج.م</span>
+
+      <div class="stat-card stat-card-lifetime">
+        <div class="lifetime-bg"></div>
+        <p class="stat-label">إجمالي اللي دفعناه (Lifetime)</p>
+        <h3 class="stat-value text-on-surface">
+          {{ formatCurrency(summary()?.amount_paid || 0) }}
+          <span class="stat-unit">ج.م</span>
+        </h3>
+        <div class="lifetime-stats">
+          <div class="stat-row">
+            <span class="stat-row-label">آخر دفعة</span>
+            <span class="stat-row-value">{{ formatCurrency(0) }} ج.م</span>
           </div>
-          <div class="w-full h-1 bg-surface-container-lowest rounded-full overflow-hidden">
-            <div class="bg-primary h-full w-2/3"></div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="paidPercentage"></div>
           </div>
-          <div class="flex justify-between items-center text-[10px] text-outline">
+          <div class="stat-row dates">
             <span>يناير 2024</span>
             <span>مارس 2024</span>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Tabs Section -->
-  <section class="mt-12">
-    <div class="flex gap-8 border-b border-white/5 mb-8">
-      <button (click)="setTab('shipments')" [ngClass]="activeTab() === 'shipments' ? 'text-primary border-primary' : 'text-outline hover:text-on-background border-transparent'" class="pb-4 font-bold border-b-2 transition-all flex items-center gap-2">
-        <span class="material-symbols-outlined text-xl">&#xe179;</span>
-        الحاويات (الشحنات)
-      </button>
-      <button (click)="setTab('payments')" [ngClass]="activeTab() === 'payments' ? 'text-primary border-primary' : 'text-outline hover:text-on-background border-transparent'" class="pb-4 font-bold border-b-2 transition-all flex items-center gap-2">
-        <span class="material-symbols-outlined text-xl">&#xef6e;</span>
-        كشف الحساب (المدفوعات)
-      </button>
-    </div>
-
-    <!-- Tab Content -->
-    <div [ngSwitch]="activeTab()">
-      <div *ngSwitchCase="'shipments'" class="bg-surface-container-lowest rounded-xl overflow-hidden border border-white/5">
-        <table class="w-full text-right">
-          <thead>
-            <tr class="bg-surface-container-high/50 text-outline text-xs uppercase tracking-widest font-bold">
-              <th class="px-8 py-5">رقم الحاوية</th>
-              <th class="px-6 py-5">تاريخ الوصول</th>
-              <th class="px-6 py-5">الحالة</th>
-              <th class="px-6 py-5">عدد القطع</th>
-              <th class="px-6 py-5 text-left">القيمة الإجمالية</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5">
-            @for (shipment of shipments(); track shipment.id) {
-              <tr class="hover:bg-white/[0.02] transition-colors group">
-                <td class="px-8 py-6">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center group-hover:text-primary transition-colors">
-                      <span class="material-symbols-outlined">&#xeb4f;</span>
-                    </div>
-                    <span [routerLink]="['/shipments', shipment.id]" class="font-bold tracking-wider cursor-pointer">{{ shipment.number }}</span>
-                  </div>
-                </td>
-                <td class="px-6 py-6 text-sm text-outline">{{ shipment.arrivalDate }}</td>
-                <td class="px-6 py-6">
-                  @if (shipment.status === 'delivered') {
-                    <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-green-500/10 text-green-500 border border-green-500/20">وصلت المخزن</span>
-                  } @else {
-                    <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">في الطريق</span>
-                  }
-                </td>
-                <td class="px-6 py-6 text-sm">{{ shipment.itemCount }} قطعة</td>
-                <td class="px-6 py-6 text-left font-bold text-primary">{{ shipment.totalValue }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      <div *ngSwitchCase="'payments'" class="p-10 text-center text-outline">
-        <span class="material-symbols-outlined text-6xl mb-4">&#xe889;</span>
-        <p>لا يوجد مدفوعات مسجلة حالياً لهذه الصفحة</p>
-      </div>
-    </div>
-
-    <!-- Section Footer / Asymmetric Insight -->
-    <div class="mt-8 grid grid-cols-3 gap-6">
-      <div class="bg-[#1c1b1b] p-6 rounded-xl border border-white/5 flex items-start gap-4">
-        <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center text-secondary">
-          <span class="material-symbols-outlined">&#xe8e5;</span>
-        </div>
-        <div>
-          <p class="text-xs text-outline mb-1">أكتر قطعة بتطلب منه</p>
-          <h4 class="text-lg font-bold">{{ supplier().topSellingItem }}</h4>
-          <p class="text-[10px] text-secondary font-medium mt-1">بيمثل {{ supplier().topSellingItemPercentage }}% من الشحنات</p>
-        </div>
-      </div>
-      <div class="col-span-2 bg-primary/5 p-6 rounded-xl border border-primary/10 flex items-center justify-between">
-        <div class="flex gap-4 items-center">
-          <img class="w-20 h-20 rounded-lg object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUkeedQgZRvkPILOmsq0SfVEOoq64D8h-wNDajjCYEjYPrTTQd-70HPzVMSXLxMuHLjJZ2swUXhvGFcZU3URPLkvRbBUNm-oBkC_S5lQLw1lXjCR1NLfhjsmr2-rVmGJnB-L9csWvSWC-C_g_aOnLWR2dmHcncpCTxnP7rHSsEsgD9UaMP7YuGFWv71yIM6jQKNrxduZnVEgTsEVHtUQNEu9w1qdEtu-TdoVwx1viVB9AcBm32-3LtEGTA8P0vVrsuFHAcMNFi7ts"/>
-          <div>
-            <h4 class="font-bold">ملاحظة المعرض:</h4>
-            <p class="text-sm text-outline leading-relaxed max-w-md">{{ supplier().showroomNote }}</p>
-          </div>
-        </div>
-        <button class="p-3 bg-surface-container-highest rounded-full text-primary hover:scale-110 transition-transform">
-          <span class="material-symbols-outlined">&#xe3c9;</span>
+    <!-- Tabs Section -->
+    <section class="tabs-section">
+      <div class="tabs-header">
+        <button 
+          (click)="setTab('shipments')"
+          [class.active]="activeTab() === 'shipments'"
+          class="tab-btn">
+          <span class="material-symbols-outlined">local_shipping</span>
+          <span>الداويات (الشحنات)</span>
+        </button>
+        <button 
+          (click)="setTab('payments')"
+          [class.active]="activeTab() === 'payments'"
+          class="tab-btn">
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span>كشف الحساب (المدفوعات)</span>
         </button>
       </div>
-    </div>
-  </section>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        @if (activeTab() === 'shipments') {
+          @if (shipments().length === 0) {
+            <div class="empty-state">
+              <span class="material-symbols-outlined empty-icon">local_shipping</span>
+              <p class="empty-text">لا توجد شحنات لهذا المورد</p>
+            </div>
+          } @else {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>رقم الحاوية</th>
+                  <th>تاريخ الوصول</th>
+                  <th>الحالة</th>
+                  <th>عدد القطع</th>
+                  <th>القيمة الإجمالية</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (shipment of shipments(); track shipment.id) {
+                  <tr class="table-row">
+                    <td>
+                      <div class="shipment-link" (click)="navigateToShipment(shipment.id)">
+                        <div class="shipment-icon">
+                          <span class="material-symbols-outlined">inventory_2</span>
+                        </div>
+                        <span class="shipment-number">{{ shipment.date_received.substring(0, 10).replace(/-/g, '') }}</span>
+                      </div>
+                    </td>
+                    <td class="text-on-surface-variant">{{ formatDate(shipment.date_received) }}</td>
+                    <td>
+                      <span class="status-badge" [class]="getShipmentStatus(shipment.payment_status).class">
+                        {{ getShipmentStatus(shipment.payment_status).text }}
+                      </span>
+                    </td>
+                    <td>--</td>
+                    <td class="text-primary font-bold">{{ formatCurrency(shipment.declared_value) }} ج.م</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        } @else {
+          @if (payments().length === 0) {
+            <div class="empty-state">
+              <span class="material-symbols-outlined empty-icon">receipt</span>
+              <p class="empty-text">لا توجد مدفوعات مسجلة لهذا المورد</p>
+            </div>
+          } @else {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>التاريخ</th>
+                  <th>النوع</th>
+                  <th>الشحنة</th>
+                  <th>المبلغ</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (payment of payments(); track payment.id) {
+                  <tr class="table-row">
+                    <td>{{ formatDate(payment.paid_date) }}</td>
+                    <td>دفعة</td>
+                    <td>--</td>
+                    <td class="text-primary font-bold">{{ formatCurrency(payment.amount) }} ج.م</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        }
+      </div>
+    </section>
+
+    <!-- Showroom Note -->
+    @if (supplier()?.notes) {
+      <section class="showroom-note">
+        <div class="note-card">
+          <div class="note-icon">
+            <span class="material-symbols-outlined">info</span>
+          </div>
+          <div class="note-content">
+            <h4 class="note-title">ملاحظة المعرض:</h4>
+            <p class="note-text">{{ supplier()?.notes }}</p>
+          </div>
+        </div>
+      </section>
+    }
+  }
 </div>
