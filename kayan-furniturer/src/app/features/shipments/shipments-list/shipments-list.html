@@ -110,16 +110,16 @@
                 </div>
               </td>
               <td class="px-6 py-6 font-label text-sm text-on-surface text-left">{{ formatCurrency(shipment.declared_value) }}</td>
-              <td class="px-6 py-6 font-label text-sm text-secondary text-left">{{ formatCurrency(shipment.total_paid) }}</td>
-              <td class="px-6 py-6 font-label text-sm text-left" [ngClass]="shipment.declared_value - shipment.total_paid > 0 ? 'text-error/80' : 'text-outline-variant'">
-                {{ formatCurrency(shipment.declared_value - shipment.total_paid) }}
+              <td class="px-6 py-6 font-label text-sm text-secondary text-left">{{ formatCurrency(shipment.amount_paid) }}</td>
+              <td class="px-6 py-6 font-label text-sm text-left" [ngClass]="shipment.declared_value - shipment.amount_paid > 0 ? 'text-error/80' : 'text-outline-variant'">
+                {{ formatCurrency(shipment.declared_value - shipment.amount_paid) }}
               </td>
               <td class="px-6 py-6 text-center">
                 <span class="text-[10px] font-bold font-headline px-3 py-1 rounded-full border"
                       [ngClass]="{
-                        'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': shipment.payment_status === 'FULL',
-                        'bg-amber-500/10 text-amber-400 border-amber-500/20': shipment.payment_status === 'PARTIAL',
-                        'bg-error/10 text-error border-error/20': shipment.payment_status === 'NOT_PAID'
+                        'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': shipment.payment_status === 'settled',
+                        'bg-amber-500/10 text-amber-400 border-amber-500/20': shipment.payment_status === 'partial',
+                        'bg-error/10 text-error border-error/20': shipment.payment_status === 'unpaid'
                       }">
                   {{ getStatusLabel(shipment.payment_status) }}
                 </span>

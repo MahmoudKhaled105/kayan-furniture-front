@@ -1,8 +1,8 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ShipmentService } from '../../../shared/services/shipment.service';
+import { ShipmentService, Shipment } from '../../../shared/services/shipment.service';
 import { SupplierService, Supplier } from '../../../shared/services/supplier.service';
 
 @Component({
@@ -14,12 +14,15 @@ import { SupplierService, Supplier } from '../../../shared/services/supplier.ser
 })
 export class AddShipment implements OnInit {
   private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private shipmentService = inject(ShipmentService);
   private supplierService = inject(SupplierService);
 
   currentStep = signal(1);
   isLoading = signal(false);
+  isEditMode = signal(false);
+  editId = signal<number | null>(null);
   suppliers = signal<Supplier[]>([]);
   
   shipmentForm: FormGroup;
@@ -32,12 +35,40 @@ export class AddShipment implements OnInit {
       notes: [''],
       supplier_id: [null, Validators.required],
       declared_value: [0, [Validators.required, Validators.min(1)]],
-      total_paid: [0, [Validators.required, Validators.min(0)]]
+      partial_delivery: [false]
     });
   }
 
   ngOnInit() {
     this.loadSuppliers();
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.isEditMode.set(true);
+      this.editId.set(Number(id));
+      this.loadShipmentData(Number(id));
+    }
+  }
+
+  loadShipmentData(id: number) {
+    this.isLoading.set(true);
+    this.shipmentService.getShipment(id).subscribe({
+      next: (data: Shipment) => {
+        this.shipmentForm.patchValue({
+          container_number: data.container_number,
+          date_received: data.date_received,
+          estimated_arrival: data.estimated_arrival,
+          notes: data.notes,
+          supplier_id: data.supplier_id,
+          declared_value: data.declared_value,
+          partial_delivery: data.partial_delivery === 1
+        });
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.router.navigate(['/shipments']);
+      }
+    });
   }
 
   loadSuppliers() {
@@ -68,25 +99,35 @@ export class AddShipment implements OnInit {
       this.isLoading.set(true);
       const val = this.shipmentForm.value;
       
-      // Determine payment status
-      let payment_status: 'NOT_PAID' | 'PARTIAL' | 'FULL' = 'NOT_PAID';
-      if (val.total_paid === 0) payment_status = 'NOT_PAID';
-      else if (val.total_paid >= val.declared_value) payment_status = 'FULL';
-      else payment_status = 'PARTIAL';
+      let payload: any;
+      if (this.isEditMode()) {
+        payload = {
+          date_received: val.date_received,
+          declared_value: val.declared_value,
+          partial_delivery: val.partial_delivery ? 1 : 0,
+          notes: val.notes,
+          container_number: val.container_number,
+          estimated_arrival: val.estimated_arrival
+        };
+      } else {
+        payload = {
+          ...val,
+          partial_delivery: val.partial_delivery ? 1 : 0,
+          status: 'PENDING'
+        };
+      }
 
-      const payload = {
-        ...val,
-        payment_status,
-        status: 'PENDING'
-      };
+      const obs = this.isEditMode() 
+        ? this.shipmentService.updateShipment(this.editId()!, payload)
+        : this.shipmentService.createShipment(payload);
 
-      this.shipmentService.createShipment(payload).subscribe({
+      obs.subscribe({
         next: () => {
           this.isLoading.set(false);
           this.router.navigate(['/shipments']);
         },
         error: (err) => {
-          console.error('Failed to create shipment:', err);
+          console.error('Failed to save shipment:', err);
           this.isLoading.set(false);
           alert('فشل في حفظ الشحنة');
         }

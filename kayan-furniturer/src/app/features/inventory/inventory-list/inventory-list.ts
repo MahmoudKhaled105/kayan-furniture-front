@@ -55,23 +55,26 @@ export class InventoryList implements OnInit {
       params.location_id = this.selectedLocation();
     }
 
-    const obs: Observable<any> = this.activeTab() === 'products' 
-      ? this.inventoryService.getItems(params)
-      : this.inventoryService.getInventory(params);
-
-    obs.subscribe({
-      next: (data: any) => {
-        if (this.activeTab() === 'products') {
-          this.products.set(data);
-        } else {
-          this.bulkItems.set(data);
-        }
-        this.loadStockSummary();
-        this.isLoading.set(false);
+    // Fetch both to keep counts accurate, even if only one is displayed
+    this.inventoryService.getItems(params).subscribe({
+      next: (products: ProductItem[]) => {
+        this.products.set(products);
+        this.inventoryService.getInventory(params).subscribe({
+          next: (bulk: InventoryItem[]) => {
+            this.bulkItems.set(bulk);
+            this.loadStockSummary();
+            this.isLoading.set(false);
+          },
+          error: (err: any) => {
+            console.error('Failed to load bulk data:', err);
+            this.error.set('فشل في تحميل بيانات الخامات');
+            this.isLoading.set(false);
+          }
+        });
       },
       error: (err: any) => {
-        console.error('Failed to load inventory data:', err);
-        this.error.set('فشل في تحميل البيانات');
+        console.error('Failed to load products:', err);
+        this.error.set('فشل في تحميل بيانات المنتجات');
         this.isLoading.set(false);
       }
     });
@@ -92,6 +95,22 @@ export class InventoryList implements OnInit {
   setLocation(locationId: number | null) {
     this.selectedLocation.set(locationId);
     this.loadData();
+  }
+
+  onDeleteBulkItem(id: number) {
+    if (confirm('هل أنت متأكد من حذف هذا البند من المخزون؟')) {
+      this.isLoading.set(true);
+      this.inventoryService.deleteInventoryItem(id).subscribe({
+        next: () => {
+          this.loadData();
+        },
+        error: (err: any) => {
+          console.error('Failed to delete item:', err);
+          this.error.set('فشل في حذف البند');
+          this.isLoading.set(false);
+        }
+      });
+    }
   }
 
   getStatusClass(status: string): string {

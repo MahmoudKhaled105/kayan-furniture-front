@@ -43,7 +43,7 @@ export class ShipmentDetails implements OnInit {
   get paidPercentage(): number {
     const data = this.shipment();
     if (!data || data.declared_value === 0) return 0;
-    return Math.round((data.total_paid / data.declared_value) * 100);
+    return Math.round((data.amount_paid / data.declared_value) * 100);
   }
 
   formatCurrency(value: number): string {
@@ -52,9 +52,9 @@ export class ShipmentDetails implements OnInit {
 
   getStatusLabel(status?: string): string {
     switch (status) {
-      case 'FULL': return 'خالصة';
-      case 'PARTIAL': return 'متقسطة';
-      case 'NOT_PAID': return 'لسه مدفعش';
+      case 'settled': return 'خالصة';
+      case 'partial': return 'متقسطة';
+      case 'unpaid': return 'لسه مدفعش';
       default: return 'غير معروف';
     }
   }

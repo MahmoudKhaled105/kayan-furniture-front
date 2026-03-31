@@ -40,7 +40,7 @@ export class ShipmentsList implements OnInit {
   }
 
   calculateTotalDebts(shipments: Shipment[]) {
-    const total = shipments.reduce((sum, s) => sum + (s.declared_value - s.total_paid), 0);
+    const total = shipments.reduce((sum, s) => sum + (s.declared_value - s.amount_paid), 0);
     this.totalDebts.set(this.formatCurrency(total) + ' ج.م');
   }
 
@@ -60,9 +60,9 @@ export class ShipmentsList implements OnInit {
 
   getStatusLabel(status: string): string {
     switch (status) {
-      case 'FULL': return 'خالصة';
-      case 'PARTIAL': return 'متقسطة';
-      case 'NOT_PAID': return 'لسه مدفعش';
+      case 'settled': return 'خالصة';
+      case 'partial': return 'متقسطة';
+      case 'unpaid': return 'لسه مدفعش';
       default: return 'غير معروف';
     }
   }

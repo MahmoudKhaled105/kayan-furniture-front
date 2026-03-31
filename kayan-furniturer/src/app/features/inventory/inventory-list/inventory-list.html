@@ -67,7 +67,7 @@
           <div class="relative z-10">
             <h4 class="text-outline-variant text-[10px] font-bold uppercase tracking-widest mb-4">إجمالي قيمة البضاعة غير المباعة</h4>
             <div class="flex items-baseline gap-3">
-              <span class="text-5xl font-black font-manrope text-primary">{{ stockValueSummary().total_unsold_value | number:'1.0-0' }}</span>
+              <span class="text-5xl font-black font-manrope text-primary">{{ (stockValueSummary()?.total_unsold_value || (stockValueSummary()?.total ?? 0)) | number:'1.0-0' }}</span>
               <span class="text-xl font-bold font-headline text-outline-variant">جنيه مصري</span>
             </div>
           </div>
@@ -89,10 +89,13 @@
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <span class="text-white font-bold bg-primary/80 px-6 py-2 rounded-full">عرض التفاصيل</span>
               </div>
-              <!-- Placeholder for images -->
-              <div class="w-full h-full flex items-center justify-center text-outline-variant/20">
-                <span class="material-symbols-outlined text-8xl">&#xe16b;</span>
-              </div>
+              @if (item.thumbnail_url) {
+                <img [src]="item.thumbnail_url" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Product Thumbnail"/>
+              } @else {
+                <div class="w-full h-full flex items-center justify-center text-outline-variant/20">
+                  <span class="material-symbols-outlined text-8xl">&#xe16b;</span>
+                </div>
+              }
               <div class="absolute top-4 right-4">
                 <span [class]="'px-4 py-1.5 rounded-full text-[10px] font-black border ' + getStatusClass(item.status)">
                   {{ getStatusText(item.status) }}
@@ -130,9 +133,19 @@
         @for (item of bulkItems(); track item.id) {
           <div class="bg-surface-container-high p-8 rounded-3xl border border-white/5 hover:bg-surface-container-highest transition-all animate-in fade-in duration-500">
             <div class="flex justify-between items-start mb-8">
-              <span class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center material-symbols-outlined">
-                &#xea5b;
-              </span>
+              <div class="flex gap-2">
+                <span class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center material-symbols-outlined">
+                  &#xea5b;
+                </span>
+                <div class="flex flex-col gap-1">
+                  <button [routerLink]="['/inventory/edit', item.id]" class="text-[10px] text-primary/60 hover:text-primary transition-colors flex items-center gap-1 font-bold">
+                    <span class="material-symbols-outlined text-xs">edit</span> تعديل
+                  </button>
+                  <button (click)="onDeleteBulkItem(item.id)" class="text-[10px] text-error/60 hover:text-error transition-colors flex items-center gap-1 font-bold">
+                    <span class="material-symbols-outlined text-xs">delete</span> حذف
+                  </button>
+                </div>
+              </div>
               <div class="text-left">
                 <p class="text-[10px] text-outline-variant font-bold uppercase mb-1">الكمية</p>
                 <p class="text-2xl font-black font-manrope text-on-surface">{{ item.quantity }}</p>

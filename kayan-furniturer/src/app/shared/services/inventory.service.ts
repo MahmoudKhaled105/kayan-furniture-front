@@ -11,6 +11,8 @@ export interface InventoryItem {
   quantity: number;
   unit_price: number;
   total_value: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ProductItem {
@@ -24,6 +26,9 @@ export interface ProductItem {
   purchase_value: number;
   sale_price: number;
   status: 'in_storage' | 'sold' | 'reserved' | 'in_transit';
+  thumbnail_url?: string;
+  images?: string[];
+  part_ids?: number[];
 }
 
 @Injectable({
@@ -43,6 +48,14 @@ export class InventoryService {
 
   createInventoryItem(item: Partial<InventoryItem>): Observable<InventoryItem> {
     return this.http.post<InventoryItem>('/inventory', item);
+  }
+
+  updateInventoryItem(id: number, item: Partial<InventoryItem>): Observable<InventoryItem> {
+    return this.http.patch<InventoryItem>(`/inventory/${id}`, item);
+  }
+
+  deleteInventoryItem(id: number): Observable<any> {
+    return this.http.delete<any>(`/inventory/${id}`);
   }
 
   // Products / Items

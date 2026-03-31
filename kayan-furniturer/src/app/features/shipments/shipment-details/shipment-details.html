@@ -38,7 +38,7 @@
         <button class="w-12 h-12 rounded-xl bg-surface-container-high text-outline-variant flex items-center justify-center hover:text-primary transition-all shadow-lg border border-white/5">
           <span class="material-symbols-outlined">&#xe8ad;</span>
         </button>
-        <button class="bg-surface-container-high text-primary px-8 py-4 rounded-xl font-bold font-headline border border-primary/20 hover:bg-primary/10 transition-all shadow-xl active:scale-95 flex items-center gap-2">
+        <button [routerLink]="['/shipments/edit', data.id]" class="bg-surface-container-high text-primary px-8 py-4 rounded-xl font-bold font-headline border border-primary/20 hover:bg-primary/10 transition-all shadow-xl active:scale-95 flex items-center gap-2">
           <span class="material-symbols-outlined">&#xe3c9;</span>
           تعديل البيانات
         </button>
@@ -56,14 +56,14 @@
       </div>
       <div class="bg-surface-container-low p-6 rounded-2xl border border-white/5">
         <p class="text-[10px] text-outline-variant font-bold uppercase tracking-widest mb-2">المدفوع حتى الآن</p>
-        <h3 class="text-3xl font-black font-headline text-secondary">{{ formatCurrency(data.total_paid) }} <span class="text-xs font-normal opacity-40">ج.م</span></h3>
+        <h3 class="text-3xl font-black font-headline text-secondary">{{ formatCurrency(data.amount_paid) }} <span class="text-xs font-normal opacity-40">ج.م</span></h3>
         <div class="w-full h-1 bg-surface-container-highest rounded-full mt-4 overflow-hidden">
           <div class="bg-secondary h-full transition-all duration-1000" [style.width.%]="paidPercentage"></div>
         </div>
       </div>
       <div class="bg-surface-container-low p-6 rounded-2xl border border-white/5">
         <p class="text-[10px] text-outline-variant font-bold uppercase tracking-widest mb-2">متبقي للمورد</p>
-        <h3 class="text-3xl font-black font-headline text-error/80">{{ formatCurrency(data.declared_value - data.total_paid) }} <span class="text-xs font-normal opacity-40">ج.م</span></h3>
+        <h3 class="text-3xl font-black font-headline text-error/80">{{ formatCurrency(data.declared_value - data.amount_paid) }} <span class="text-xs font-normal opacity-40">ج.م</span></h3>
         <p class="text-[10px] text-error mt-2 font-bold font-headline">الحالة: {{ getStatusLabel(data.payment_status) }}</p>
       </div>
       <div class="bg-surface-container-low p-6 rounded-2xl border border-white/5">

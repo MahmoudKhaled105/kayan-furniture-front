@@ -9,11 +9,14 @@ export interface Shipment {
   estimated_arrival?: string;
   date_received: string;
   declared_value: number;
-  total_paid: number;
-  payment_status: 'NOT_PAID' | 'PARTIAL' | 'FULL';
+  amount_paid: number;
+  remaining_balance: number;
+  payment_status: 'unpaid' | 'partial' | 'settled';
+  partial_delivery: 0 | 1;
   status: 'PENDING' | 'IN_TRANSIT' | 'ARRIVED';
   notes?: string;
   supplier_name?: string;
+  installments?: any[];
 }
 
 export interface ShipmentStats {

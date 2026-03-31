@@ -30,9 +30,24 @@
   <div class="grid grid-cols-12 gap-10">
     <!-- Left: Details & Photos -->
     <div class="col-span-12 lg:col-span-8 space-y-10">
-      <!-- Media/Gallery Placeholder -->
-      <div class="bg-surface-container-high aspect-video rounded-[3rem] border border-white/5 flex items-center justify-center text-outline-variant/10 overflow-hidden relative group">
-        <span class="material-symbols-outlined text-[10rem] group-hover:scale-110 transition-transform duration-700">&#xe16b;</span>
+      <!-- Media/Gallery -->
+      <div class="bg-surface-container-high aspect-video rounded-[3rem] border border-white/5 overflow-hidden relative group">
+        @if (item()?.images?.length) {
+          <div class="w-full h-full relative">
+            <img [src]="item()?.images?.[0]" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Product Image"/>
+            @if (item()!.images!.length > 1) {
+              <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+                @for (img of item()!.images; track $index) {
+                  <div class="w-2 h-2 rounded-full bg-white/20" [class.bg-white]=" $index === 0"></div>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="w-full h-full flex items-center justify-center text-outline-variant/10">
+            <span class="material-symbols-outlined text-[10rem] group-hover:scale-110 transition-transform duration-700">&#xe16b;</span>
+          </div>
+        }
         <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
         <div class="absolute bottom-10 right-10 flex gap-4">
           <span [class]="'px-6 py-2 rounded-full text-xs font-black border backdrop-blur-md ' + 

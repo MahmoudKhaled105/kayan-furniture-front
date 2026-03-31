@@ -9,8 +9,12 @@
   <!-- Stepper Header -->
   <div class="flex items-center justify-between mb-16">
     <div class="flex-1">
-      <h2 class="text-4xl font-black font-headline text-on-surface mb-2">إضافة شحنة (حاوية)</h2>
-      <p class="text-outline-variant font-headline">تسجيل بيانات الوصول والمبالغ المستحقة للموردين</p>
+      <h2 class="text-4xl font-black font-headline text-on-surface mb-2">
+        {{ isEditMode() ? 'تعديل بيانات الشحنة' : 'إضافة شحنة (حاوية)' }}
+      </h2>
+      <p class="text-outline-variant font-headline">
+        {{ isEditMode() ? 'تحديث معلومات الوصول وملاحظات الحاوية' : 'تسجيل بيانات الوصول والمبالغ المستحقة للموردين' }}
+      </p>
     </div>
     <div class="flex items-center gap-12 bg-surface-container-low px-10 py-5 rounded-2xl border border-white/5">
       <div class="flex flex-col items-center gap-2 cursor-pointer transition-all" (click)="setStep(1)" [ngClass]="currentStep() >= 1 ? 'text-primary' : 'text-outline-variant opacity-40'">
@@ -79,7 +83,7 @@
             </div>
           </div>
           <div class="space-y-6">
-            <div class="space-y-2">
+            <div class="space-y-2" [ngClass]="{'opacity-50 pointer-events-none': isEditMode()}">
               <label class="text-xs font-bold text-outline-variant mr-1">المورد الأساسي للشحنة</label>
               <select formControlName="supplier_id" class="w-full bg-surface-container-lowest border-none rounded-xl px-6 py-5 text-on-surface focus:ring-1 focus:ring-secondary/40 outline-none transition-all appearance-none cursor-pointer">
                 <option [value]="null">اختر مورد...</option>
@@ -128,19 +132,19 @@
               }
             </div>
             <div class="space-y-2">
-              <label class="text-xs font-bold text-outline-variant mr-1">المبلغ المدفوع حياً (مقدم)</label>
-              <input formControlName="total_paid" class="w-full bg-surface-container-lowest border-none rounded-xl px-6 py-5 text-secondary focus:ring-1 focus:ring-secondary/40 font-manrope outline-none transition-all" placeholder="0.00 ج.م" type="number"/>
+              <label class="text-xs font-bold text-outline-variant mr-1">استلام جزئي للمنتجات؟</label>
+              <div class="flex items-center gap-4 bg-surface-container-lowest rounded-xl px-6 py-5 border border-white/5">
+                <p class="text-[10px] text-outline-variant flex-1">هل تم استلام بعض القطع فقط؟</p>
+                <input formControlName="partial_delivery" type="checkbox" class="w-6 h-6 rounded-lg border-white/10 bg-surface-container-highest text-primary focus:ring-primary/40"/>
+              </div>
             </div>
           </div>
           
           <div class="p-6 bg-surface-container-lowest rounded-2xl border border-white/5 border-emerald-400/10">
             <div class="flex justify-between items-center">
               <div>
-                <h5 class="text-lg font-black text-on-surface mb-1">المبلغ المتبقي للمورد</h5>
-                <p class="text-xs text-outline-variant">سيتم تسجيله كمديونية على هذا المورد</p>
-              </div>
-              <div class="text-3xl font-black font-manrope text-emerald-400">
-                {{ shipmentForm.get('declared_value')?.value - shipmentForm.get('total_paid')?.value | number:'1.0-0' }} ج.م
+                <h5 class="text-lg font-black text-on-surface mb-1">ملاحظات الحسابات</h5>
+                <p class="text-xs text-outline-variant">يتم تحديث المديونية تلقائياً بناءً على دفعات الأقساط</p>
               </div>
             </div>
           </div>
@@ -162,9 +166,9 @@
               <span class="material-symbols-outlined">&#xe5c4;</span>
             </button>
           } @else {
-            <button class="px-12 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_10px_30px_rgba(232,196,106,0.15)] flex items-center gap-3" type="submit">
-              <span>حفظ الشحنة بالكامل</span>
-              <span class="material-symbols-outlined">&#xe8e8;</span>
+            <button class="px-12 py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_10px_30px_rgba(232,196,106,0.15)] flex items-center gap-3" type="submit" [disabled]="shipmentForm.invalid || isLoading()">
+              <span>{{ isEditMode() ? 'تحديث بيانات الشحنة' : 'حفظ الشحنة بالكامل' }}</span>
+              <span class="material-symbols-outlined">{{ isEditMode() ? 'save' : 'check' }}</span>
             </button>
           }
         </div>
