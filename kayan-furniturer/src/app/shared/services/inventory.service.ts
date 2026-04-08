@@ -75,6 +75,10 @@ export class InventoryService {
     return this.http.patch<ProductItem>(`/items/${id}`, item);
   }
 
+  deleteItem(id: number): Observable<any> {
+    return this.http.delete<any>(`/items/${id}`);
+  }
+
   transferItem(id: number, data: { to_location_id: number, transfer_date: string, transport_cost?: number, notes?: string }): Observable<any> {
     return this.http.post<any>(`/items/${id}/transfer`, data);
   }

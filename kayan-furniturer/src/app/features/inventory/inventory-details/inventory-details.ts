@@ -22,6 +22,8 @@ export class InventoryDetails implements OnInit {
   locations = signal<any[]>([]);
   transfers = signal<any[]>([]);
   
+  selectedImageIndex = signal(0);
+  
   transferForm: FormGroup;
   showTransferModal = signal(false);
 
@@ -46,6 +48,7 @@ export class InventoryDetails implements OnInit {
     this.inventoryService.getItem(id).subscribe({
       next: (data: any) => {
         this.item.set(data);
+        this.selectedImageIndex.set(0); // Reset to first image
         this.loadTransfers(id);
         this.isLoading.set(false);
       },
@@ -55,6 +58,10 @@ export class InventoryDetails implements OnInit {
     });
 
     this.inventoryService.getLocations().subscribe((l: any[]) => this.locations.set(l));
+  }
+
+  setMainImage(index: number) {
+    this.selectedImageIndex.set(index);
   }
 
   loadTransfers(id: number) {

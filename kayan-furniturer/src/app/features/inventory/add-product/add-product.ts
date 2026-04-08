@@ -56,6 +56,69 @@ export class AddProduct implements OnInit {
     images.push(this.fb.control(url));
   }
 
+  triggerFileInput(input: HTMLInputElement) {
+    input.click();
+  }
+
+  onFileSelected(event: any) {
+    const files = event.target.files as FileList;
+    if (!files) return;
+
+    Array.from(files).forEach(async (file) => {
+      try {
+        const compressedBase64 = await this.compressImage(file);
+        this.addImage(compressedBase64);
+      } catch (err) {
+        console.error('Compression failed:', err);
+        // Fallback to original reader if compression fails unexpectedly
+        const reader = new FileReader();
+        reader.onload = (e: any) => this.addImage(e.target.result);
+        reader.readAsDataURL(file);
+      }
+    });
+
+    event.target.value = '';
+  }
+
+  private compressImage(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1024;
+
+          if (width > height) {
+            if (width > maxDim) {
+              height *= maxDim / width;
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width *= maxDim / height;
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Quality 0.7 to significantly reduce size while keeping quality
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   removeImage(index: number) {
     const images = this.itemForm.get('images') as FormArray;
     images.removeAt(index);

@@ -96,8 +96,8 @@
             <div class="grid grid-cols-2 gap-8">
               <div class="space-y-2">
                 <label class="text-xs font-bold text-outline-variant mr-1">التاريخ المتوقع للتسليم</label>
-                <input formControlName="expected_arrival" type="date" 
-                  class="w-full bg-surface-container-lowest border-none rounded-2xl px-6 py-5 text-on-surface focus:ring-1 focus:ring-amber-400/40 outline-none transition-all"/>
+                <input formControlName="expected_arrival" type="date" (click)="$any($event.target).showPicker()"
+                  class="w-full bg-surface-container-lowest border-none rounded-2xl px-6 py-5 text-on-surface focus:ring-1 focus:ring-amber-400/40 outline-none transition-all cursor-pointer"/>
               </div>
               <div class="space-y-2">
                 <label class="text-xs font-bold text-outline-variant mr-1">الموقع المستلم للطلب</label>

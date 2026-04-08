@@ -113,6 +113,23 @@ export class InventoryList implements OnInit {
     }
   }
 
+  onDeleteProduct(event: Event, id: number) {
+    event.stopPropagation();
+    if (confirm('هل أنت متأكد من حذف هذه القطعة من المخزون نهائياً؟')) {
+      this.isLoading.set(true);
+      this.inventoryService.deleteItem(id).subscribe({
+        next: () => {
+          this.loadData();
+        },
+        error: (err: any) => {
+          console.error('Failed to delete product:', err);
+          this.error.set('فشل في حذف القطعة');
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
   getStatusClass(status: string): string {
     switch (status) {
       case 'in_storage': return 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20';

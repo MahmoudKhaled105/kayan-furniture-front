@@ -15,9 +15,14 @@
     </div>
     <div class="balance-value">٤٥٠,٢٣٠ <span class="text-sm opacity-60">ج.م</span></div>
   </div>
-  
+
   <div class="nav-items">
-    <a class="nav-item" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+    <a
+      class="nav-item"
+      routerLink="/dashboard"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
       <span class="material-symbols-outlined">dashboard</span>
       <span>الزتونة</span>
     </a>
@@ -37,12 +42,12 @@
       <span class="material-symbols-outlined">person</span>
       <span>العملاء</span>
     </a>
-    <a class="nav-item">
+    <a class="nav-item" routerLink="/accounts" routerLinkActive="active">
       <span class="material-symbols-outlined">account_balance</span>
       <span>الحسابات</span>
     </a>
   </div>
-  
+
   <div class="nav-footer">
     <button class="add-transaction-btn">
       <span class="material-symbols-outlined">add_circle</span>

@@ -101,6 +101,21 @@
                   {{ getStatusText(item.status) }}
                 </span>
               </div>
+              <div class="absolute top-4 left-4 flex gap-2">
+                <button 
+                  [routerLink]="['/inventory/edit', item.id]"
+                  (click)="$event.stopPropagation()"
+                  class="w-10 h-10 rounded-full bg-black/40 text-white backdrop-blur-md flex items-center justify-center hover:bg-primary transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <span class="material-symbols-outlined text-lg">edit</span>
+                </button>
+                <button 
+                  (click)="onDeleteProduct($event, item.id)"
+                  class="w-10 h-10 rounded-full bg-black/40 text-white backdrop-blur-md flex items-center justify-center hover:bg-error transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <span class="material-symbols-outlined text-lg">delete</span>
+                </button>
+              </div>
             </div>
             <div class="p-8">
               <div class="mb-6">

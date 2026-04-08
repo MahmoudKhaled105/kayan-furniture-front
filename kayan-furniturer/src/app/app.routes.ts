@@ -13,6 +13,7 @@ import { CustomerDetails } from './features/customers/customer-details/customer-
 import { SalesList } from './features/sales/sales-list/sales-list';
 import { OrderDetails } from './features/sales/order-details/order-details';
 import { AddOrder } from './features/sales/add-order/add-order';
+import { AccountsDashboard } from './features/accounts/accounts-dashboard/accounts-dashboard';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { LoginComponent } from './shared/components/login/login.component';
 import { RegisterComponent } from './shared/components/register/register.component';
@@ -39,5 +40,6 @@ export const routes: Routes = [
   { path: 'sales', component: SalesList, canActivate: [AuthGuard] },
   { path: 'sales/add', component: AddOrder, canActivate: [AuthGuard] },
   { path: 'sales/:id', component: OrderDetails, canActivate: [AuthGuard] },
+  { path: 'accounts', component: AccountsDashboard, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '/dashboard' },
 ];
